@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/noornee/redown/utility"
+	"github.com/noornee/reddit-dl/utility"
 )
 
 var temp_dir string = utility.CreateDir()

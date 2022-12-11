@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/noornee/redown/external"
-	"github.com/noornee/redown/utility"
+	"github.com/noornee/reddit-dl/external"
+	"github.com/noornee/reddit-dl/utility"
 )
 
 func check(err error) {

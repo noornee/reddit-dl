@@ -1,3 +1,3 @@
-module github.com/noornee/redown
+module github.com/noornee/reddit-dl
 
 go 1.19
