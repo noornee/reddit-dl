@@ -6,22 +6,16 @@ import (
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/noornee/redown/utility"
 )
 
-func createDir() string {
-	dir, err := ioutil.TempDir("", "reddit")
-	if err != nil {
-		log.Fatal(err)
-	}
-	//defer os.RemoveAll(dir)
-
-	return dir
-}
+var temp_dir string = utility.CreateDir()
 
 // download files with aria2c
 func CMD_aria2c(video, audio string) {
 
-	cmd := exec.Command("aria2c", "-d", createDir(), "-Z", video, audio)
+	cmd := exec.Command("aria2c", "-d", temp_dir, "-Z", video, audio)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -33,9 +27,8 @@ func CMD_aria2c(video, audio string) {
 
 // merge downoladed files with ffmpeg
 func CMD_ffmpeg() {
-	cwd, _ := os.Getwd()
-	dir := cwd + createDir()
-	files, err := ioutil.ReadDir(dir)
+
+	files, err := ioutil.ReadDir(temp_dir)
 	if err != nil {
 		log.Println(err)
 	}
@@ -43,11 +36,11 @@ func CMD_ffmpeg() {
 	var aud, vid string
 
 	for range files {
-		vid = dir + "/" + files[0].Name()
-		aud = dir + "/" + files[1].Name()
+		vid = temp_dir + "/" + files[0].Name()
+		aud = temp_dir + "/" + files[1].Name()
 	}
 
-	cmd := exec.Command("ffmpeg", "-y", "-v", "quiet", "-stats", "-i", vid, "-i", aud, "new.mp4")
+	cmd := exec.Command("ffmpeg", "-y", "-v", "quiet", "-stats", "-i", vid, "-i", aud, "output.mp4")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

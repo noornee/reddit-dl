@@ -4,10 +4,22 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 )
+
+func CreateDir() string {
+	dir, err := ioutil.TempDir("", "reddit")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	return dir
+}
 
 // returns true if a valid flag was passed
 func IsFlagPassed(name string) bool {
@@ -45,7 +57,7 @@ func ParseJSONfile(file []byte) string {
 	if ok != true {
 		cross_post := data2["crosspost_parent_list"].([]interface{})
 		data3 := cross_post[0].(map[string]interface{})
-		secure_media := data3["secure_media"].(map[string]interface{}) // handle cross_post here
+		secure_media := data3["secure_media"].(map[string]interface{})
 		reddit_video := secure_media["reddit_video"].(map[string]interface{})
 		fallback_url := reddit_video["fallback_url"]
 		return fmt.Sprint(fallback_url)
