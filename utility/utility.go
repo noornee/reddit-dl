@@ -1,6 +1,11 @@
 package utility
 
-import "flag"
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"log"
+)
 
 // returns true if a valid flag was passed
 func IsFlagPassed(name string) bool {
@@ -11,4 +16,42 @@ func IsFlagPassed(name string) bool {
 		}
 	})
 	return found
+}
+
+// returns the fallback_url
+func ParseJSONfile(file []byte) string {
+
+	var dataDump interface{}
+
+	err := json.Unmarshal(file, &dataDump)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// traversing through it all to get the fallback_url
+	root := dataDump.([]interface{})
+	edge := root[0].(map[string]interface{})
+	data := edge["data"].(map[string]interface{})
+	children := data["children"].([]interface{})
+	data1 := children[0].(map[string]interface{})
+	data2 := data1["data"].(map[string]interface{})
+
+	secure_media, ok := data2["secure_media"].(map[string]interface{}) // handle cross_post here
+
+	// if it doesn have the underlying interface `ok` would be false
+	// i.e its a cross_post so this handles it
+	if ok != true {
+		cross_post := data2["crosspost_parent_list"].([]interface{})
+		data3 := cross_post[0].(map[string]interface{})
+		secure_media := data3["secure_media"].(map[string]interface{}) // handle cross_post here
+		reddit_video := secure_media["reddit_video"].(map[string]interface{})
+		fallback_url := reddit_video["fallback_url"]
+		return fmt.Sprint(fallback_url)
+	}
+
+	reddit_video := secure_media["reddit_video"].(map[string]interface{})
+	fallback_url := reddit_video["fallback_url"]
+
+	return fmt.Sprint(fallback_url)
+
 }

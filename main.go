@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"os"
 
 	"github.com/noornee/redown/utility"
 )
@@ -17,4 +19,8 @@ func main() {
 		flag.Usage()
 		return
 	}
+
+	file, _ := os.ReadFile(url)
+	fallback_url := utility.ParseJSONfile(file)
+	fmt.Println(fallback_url)
 }
