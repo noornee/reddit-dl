@@ -22,5 +22,7 @@ func main() {
 
 	file, _ := os.ReadFile(url)
 	fallback_url := utility.ParseJSONfile(file)
-	fmt.Println(fallback_url)
+
+	video, audio := utility.GetMediaUrl(fallback_url)
+	fmt.Printf("%s\n%s\n", video, audio)
 }

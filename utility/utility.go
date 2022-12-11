@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 )
 
 // returns true if a valid flag was passed
@@ -54,4 +56,12 @@ func ParseJSONfile(file []byte) string {
 
 	return fmt.Sprint(fallback_url)
 
+}
+
+func GetMediaUrl(url string) (video, audio string) {
+	video = strings.Split(url, "?")[0]
+	re, _ := regexp.Compile("_[0-9]+")
+	audio = re.ReplaceAllString(video, "_audio")
+
+	return video, audio
 }
