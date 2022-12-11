@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
+	"github.com/noornee/redown/external"
 	"github.com/noornee/redown/utility"
 )
 
@@ -24,5 +24,8 @@ func main() {
 	fallback_url := utility.ParseJSONfile(file)
 
 	video, audio := utility.GetMediaUrl(fallback_url)
-	fmt.Printf("%s\n%s\n", video, audio)
+
+	external.CMD_aria2c(video, audio)
+	external.CMD_ffmpeg()
+
 }
