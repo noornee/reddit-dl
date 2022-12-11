@@ -32,8 +32,8 @@ func IsFlagPassed(name string) bool {
 	return found
 }
 
-// returns the fallback_url
-func ParseJSONfile(file []byte) string {
+// returns the fallback_url and title
+func ParseJSONfile(file []byte) (string, string) {
 
 	var dataDump interface{}
 
@@ -49,6 +49,7 @@ func ParseJSONfile(file []byte) string {
 	children := data["children"].([]interface{})
 	data1 := children[0].(map[string]interface{})
 	data2 := data1["data"].(map[string]interface{})
+	title := data2["title"]
 
 	secure_media, ok := data2["secure_media"].(map[string]interface{}) // handle cross_post here
 
@@ -60,13 +61,13 @@ func ParseJSONfile(file []byte) string {
 		secure_media := data3["secure_media"].(map[string]interface{})
 		reddit_video := secure_media["reddit_video"].(map[string]interface{})
 		fallback_url := reddit_video["fallback_url"]
-		return fmt.Sprint(fallback_url)
+		return fmt.Sprint(fallback_url), fmt.Sprint(title)
 	}
 
 	reddit_video := secure_media["reddit_video"].(map[string]interface{})
 	fallback_url := reddit_video["fallback_url"]
 
-	return fmt.Sprint(fallback_url)
+	return fmt.Sprint(fallback_url), fmt.Sprint(title)
 
 }
 

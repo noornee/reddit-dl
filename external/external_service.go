@@ -26,7 +26,9 @@ func CMD_aria2c(video, audio string) {
 }
 
 // merge downoladed files with ffmpeg
-func CMD_ffmpeg() {
+func CMD_ffmpeg(filename string) {
+
+	filename = filename + ".mp4"
 
 	files, err := ioutil.ReadDir(temp_dir)
 	if err != nil {
@@ -40,7 +42,7 @@ func CMD_ffmpeg() {
 		aud = temp_dir + "/" + files[1].Name()
 	}
 
-	cmd := exec.Command("ffmpeg", "-y", "-v", "quiet", "-stats", "-i", vid, "-i", aud, "output.mp4")
+	cmd := exec.Command("ffmpeg", "-y", "-v", "quiet", "-stats", "-i", vid, "-i", aud, filename)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

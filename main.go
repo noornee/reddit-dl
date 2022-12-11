@@ -21,11 +21,11 @@ func main() {
 	}
 
 	file, _ := os.ReadFile(url)
-	fallback_url := utility.ParseJSONfile(file)
+	fallback_url, title := utility.ParseJSONfile(file)
 
 	video, audio := utility.GetMediaUrl(fallback_url)
 
 	external.CMD_aria2c(video, audio)
-	external.CMD_ffmpeg()
+	external.CMD_ffmpeg(title)
 
 }
