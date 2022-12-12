@@ -2,6 +2,7 @@ package utility
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -32,9 +33,8 @@ func IsFlagPassed(name string) bool {
 	return found
 }
 
-// parses the json response body
 // returns the fallback_url and title
-func ParseJSONBody(file []byte) (string, string) {
+func ParseJSONBody(file []byte) (string, string, error) {
 
 	var dataDump interface{}
 
@@ -51,8 +51,20 @@ func ParseJSONBody(file []byte) (string, string) {
 	data1 := children[0].(map[string]interface{})
 	data2 := data1["data"].(map[string]interface{})
 	title := data2["title"]
+	is_reddit_media_domain := data2["is_reddit_media_domain"]
+
+	// if the video isnt hosted on reddit
+	if is_reddit_media_domain == false {
+		return "", "", errors.New("Cannot download video")
+	}
 
 	secure_media, ok := data2["secure_media"].(map[string]interface{}) // handle cross_post here
+
+	// for gifs
+	if secure_media == nil {
+		url_overridden_by_dest := data2["url_overridden_by_dest"]
+		return fmt.Sprint(url_overridden_by_dest), fmt.Sprint(title), nil
+	}
 
 	// if it doesn have the underlying interface `ok` would be false
 	// i.e its a cross_post so this handles it
@@ -62,17 +74,27 @@ func ParseJSONBody(file []byte) (string, string) {
 		secure_media := data3["secure_media"].(map[string]interface{})
 		reddit_video := secure_media["reddit_video"].(map[string]interface{})
 		fallback_url := reddit_video["fallback_url"]
-		return fmt.Sprint(fallback_url), fmt.Sprint(title)
+		return fmt.Sprint(fallback_url), fmt.Sprint(title), nil
 	}
 
 	reddit_video := secure_media["reddit_video"].(map[string]interface{})
 	fallback_url := reddit_video["fallback_url"]
 
-	return fmt.Sprint(fallback_url), fmt.Sprint(title)
+	return fmt.Sprint(fallback_url), fmt.Sprint(title), nil
 
 }
 
+
 func GetMediaUrl(url string) (video, audio string) {
+
+	// checks if its a gif
+	if strings.HasSuffix(url, ".gif") {
+		video = url
+		audio = ""
+		return video, audio
+	}
+
+	// normal video
 	video = strings.Split(url, "?")[0]
 	re, _ := regexp.Compile("_[0-9]+")
 	audio = re.ReplaceAllString(video, "_audio")

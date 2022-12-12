@@ -6,18 +6,28 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/noornee/reddit-dl/handler"
 	"github.com/noornee/reddit-dl/utility"
 )
 
 var temp_dir string = utility.CreateDir()
 
 func Setup(video, audio, title string) {
-	aria2c(video, audio)
-	ffmpeg(title)
+
+	if audio != "" && handler.GetStatusCode(audio) == 200 {
+		aria2c(video, audio)
+		ffmpeg(title)
+		return
+	}
+
+	// if the audio status code is not 200, then its most likely invalid or it doesnt exist
+	aria2c_nos(video, title)
+
 }
 
-// download files with aria2c
+// download files[video,audio] with aria2c
 func aria2c(video, audio string) {
 
 	cmd := exec.Command("aria2c", "-d", temp_dir, "-Z", video, audio)
@@ -30,7 +40,27 @@ func aria2c(video, audio string) {
 
 }
 
-// merge downoladed files with ffmpeg
+// download files[video/gif] with aria2c
+func aria2c_nos(video, title string) {
+	var cmd *exec.Cmd
+
+	switch {
+	case strings.HasSuffix(video, ".gif"):
+		cmd = exec.Command("aria2c", video, "-o", title+".gif")
+	default:
+		cmd = exec.Command("aria2c", video, "-o", title+".mp4")
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err)
+	}
+
+}
+
+// merge downoladed files[video,audio] with ffmpeg
 func ffmpeg(filename string) {
 
 	filename = filename + ".mp4"

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/noornee/reddit-dl/external"
 	"github.com/noornee/reddit-dl/handler"
@@ -24,7 +25,12 @@ func main() {
 
 	body := handler.GetBody(url)
 
-	fallback_url, title := utility.ParseJSONBody(body)
+	fallback_url, title, err := utility.ParseJSONBody(body)
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	video, audio := utility.GetMediaUrl(fallback_url)
 

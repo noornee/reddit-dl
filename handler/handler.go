@@ -51,3 +51,16 @@ func GetBody(url string) []byte {
 	return body
 
 }
+
+func GetStatusCode(url string) int {
+
+	req, err := http.NewRequest("HEAD", url, nil)
+	check(err)
+
+	resp, err := http.DefaultClient.Do(req)
+	check(err)
+	defer resp.Body.Close()
+
+	return resp.StatusCode
+
+}
