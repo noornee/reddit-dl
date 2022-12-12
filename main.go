@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/noornee/reddit-dl/external"
 	"github.com/noornee/reddit-dl/handler"
@@ -16,9 +18,16 @@ func main() {
 	flag.Parse()
 
 	passed := utility.IsFlagPassed(raw_url)
-	if !passed {
-		flag.Usage()
-		return
+
+	// if a flag isnt passed and a url is passed, assign the url to raw_url
+	if len(os.Args) > 1 && !strings.HasSuffix(os.Args[1], "-url") {
+		raw_url = os.Args[1]
+	} else {
+		if !passed {
+			flag.Usage()
+			return
+		}
+
 	}
 
 	url := handler.ParseUrl(raw_url)
