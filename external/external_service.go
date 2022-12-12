@@ -12,8 +12,13 @@ import (
 
 var temp_dir string = utility.CreateDir()
 
+func Setup(video, audio, title string) {
+	aria2c(video, audio)
+	ffmpeg(title)
+}
+
 // download files with aria2c
-func CMD_aria2c(video, audio string) {
+func aria2c(video, audio string) {
 
 	cmd := exec.Command("aria2c", "-d", temp_dir, "-Z", video, audio)
 	cmd.Stdout = os.Stdout
@@ -26,7 +31,7 @@ func CMD_aria2c(video, audio string) {
 }
 
 // merge downoladed files with ffmpeg
-func CMD_ffmpeg(filename string) {
+func ffmpeg(filename string) {
 
 	filename = filename + ".mp4"
 

@@ -32,8 +32,9 @@ func IsFlagPassed(name string) bool {
 	return found
 }
 
+// parses the json response body
 // returns the fallback_url and title
-func ParseJSONfile(file []byte) (string, string) {
+func ParseJSONBody(file []byte) (string, string) {
 
 	var dataDump interface{}
 

@@ -2,22 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"regexp"
-	"strings"
 
 	"github.com/noornee/reddit-dl/external"
+	"github.com/noornee/reddit-dl/handler"
 	"github.com/noornee/reddit-dl/utility"
 )
-
-func check(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func main() {
 	var raw_url string
@@ -31,56 +20,14 @@ func main() {
 		return
 	}
 
-	url := parseUrl(raw_url)
+	url := handler.ParseUrl(raw_url)
 
-	//START
+	body := handler.GetBody(url)
 
-	body := getData(url)
-
-	//END
-
-	//file, _ := os.ReadFile(url)
-	fallback_url, title := utility.ParseJSONfile(body)
+	fallback_url, title := utility.ParseJSONBody(body)
 
 	video, audio := utility.GetMediaUrl(fallback_url)
 
-	external.CMD_aria2c(video, audio)
-	external.CMD_ffmpeg(title)
-
-}
-
-// Parses a url
-func parseUrl(raw string) (url string) {
-
-	re, _ := regexp.Compile("www")
-
-	//replace www with old
-	subdomain := re.ReplaceAllString(raw, "old")
-
-	split_url := strings.Split(subdomain, "?")[0]
-
-	// remove any trailing slashes
-	trim_url := strings.TrimSuffix(split_url, "/")
-
-	url = fmt.Sprintf("%s.json", trim_url)
-
-	return url
-}
-
-func getData(url string) []byte {
-
-	req, err := http.NewRequest("GET", url, nil)
-	check(err)
-
-	req.Header.Set("User-Agent", "Mozilla/5.0")
-
-	resp, err := http.DefaultClient.Do(req)
-	check(err)
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	check(err)
-
-	return body
+	external.Setup(video, audio, title)
 
 }
