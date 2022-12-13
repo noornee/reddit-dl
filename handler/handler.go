@@ -56,15 +56,19 @@ func GetBody(url string) ([]byte, error) {
 
 }
 
-func GetStatusCode(url string) int {
+func GetHead(url string) (status_code int, content_type string) {
 
 	req, err := http.NewRequest("HEAD", url, nil)
 	check(err)
 
 	resp, err := http.DefaultClient.Do(req)
 	check(err)
+
 	defer resp.Body.Close()
 
-	return resp.StatusCode
+	status_code = resp.StatusCode
+	content_type = resp.Header.Get("Content-Type")
+
+	return status_code, content_type
 
 }

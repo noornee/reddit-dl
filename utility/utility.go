@@ -56,7 +56,7 @@ func ParseJSONBody(file []byte) (string, string, error) {
 
 	// if the video isnt hosted on reddit
 	if is_reddit_media_domain == false {
-		return "", "", errors.New("Cannot download video")
+		return "", "", errors.New("Cannot download files that arent hosted on reddit")
 	}
 
 	secure_media, ok := data2["secure_media"].(map[string]interface{}) // handle cross_post here

@@ -16,13 +16,17 @@ var temp_dir string = utility.CreateDir()
 
 func Setup(video, audio, title string) {
 
-	if audio != "" && handler.GetStatusCode(audio) == 200 {
-		aria2c(video, audio)
-		ffmpeg(title)
-		return
+	if audio != "" {
+		status_code, mime := handler.GetHead(audio)
+
+		if status_code == 200 && !strings.Contains(mime, "image") {
+			aria2c(video, audio)
+			ffmpeg(title)
+			return
+		}
+
 	}
 
-	// if the audio status code is not 200, then its most likely invalid or it doesnt exist
 	aria2c_nos(video, title)
 
 }
@@ -40,15 +44,22 @@ func aria2c(video, audio string) {
 
 }
 
-// download files[video/gif] with aria2c
-func aria2c_nos(video, title string) {
+// download files[video/gif/image] with aria2c
+func aria2c_nos(file, title string) {
+
 	var cmd *exec.Cmd
 
-	switch {
-	case strings.HasSuffix(video, ".gif"):
-		cmd = exec.Command("aria2c", video, "-o", title+".gif")
+	_, mime_type := handler.GetHead(file)
+
+	switch mime_type {
+	case "image/jpeg":
+		cmd = exec.Command("aria2c", file, "-o", title+".jpg")
+	case "image/png":
+		cmd = exec.Command("aria2c", file, "-o", title+".png")
+	case "image/gif":
+		cmd = exec.Command("aria2c", file, "-o", title+".gif")
 	default:
-		cmd = exec.Command("aria2c", video, "-o", title+".mp4")
+		cmd = exec.Command("aria2c", file, "-o", title+".mp4")
 	}
 
 	cmd.Stdout = os.Stdout
