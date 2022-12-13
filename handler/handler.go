@@ -16,7 +16,8 @@ func check(err error) {
 }
 
 // Parses the url and appends .json to it
-func ParseUrl(raw string) (url string) {
+func ParseUrl(raw string) (url, title string) {
+	fmt.Println("Parsing the url...")
 
 	re, _ := regexp.Compile("www")
 
@@ -30,7 +31,12 @@ func ParseUrl(raw string) (url string) {
 
 	url = fmt.Sprintf("%s.json", trim_url)
 
-	return url
+	// get the title from the url path
+	// i.e. https://old.reddit.com/r/<sub_reddit>/comments/blahblah/`<title>`
+	url_path := strings.Split(trim_url, "/")
+	title = url_path[len(url_path)-1]
+
+	return url, title
 }
 
 // Get the url response body

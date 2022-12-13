@@ -34,7 +34,7 @@ func IsFlagPassed(name string) bool {
 }
 
 // returns the fallback_url and title
-func ParseJSONBody(file []byte) (string, string, error) {
+func ParseJSONBody(file []byte) (string, error) {
 
 	var dataDump interface{}
 
@@ -43,7 +43,7 @@ func ParseJSONBody(file []byte) (string, string, error) {
 	// traversing through it all to get the fallback_url
 	root, ok := dataDump.([]interface{})
 	if ok != true {
-		return "", "", errors.New("cannot parse body")
+		return "", errors.New("cannot parse body")
 	}
 
 	edge := root[0].(map[string]interface{})
@@ -51,7 +51,7 @@ func ParseJSONBody(file []byte) (string, string, error) {
 	children := data["children"].([]interface{})
 	data1 := children[0].(map[string]interface{})
 	data2 := data1["data"].(map[string]interface{})
-	title := data2["title"]
+
 	//is_reddit_media_domain := data2["is_reddit_media_domain"]
 
 	// if the video isnt hosted on reddit
@@ -64,7 +64,7 @@ func ParseJSONBody(file []byte) (string, string, error) {
 	// for gifs
 	if secure_media == nil {
 		url_overridden_by_dest := data2["url_overridden_by_dest"]
-		return fmt.Sprint(url_overridden_by_dest), fmt.Sprint(title), nil
+		return fmt.Sprint(url_overridden_by_dest), nil
 	}
 
 	// if it doesn have the underlying interface `ok` would be false
@@ -75,13 +75,13 @@ func ParseJSONBody(file []byte) (string, string, error) {
 		secure_media := data3["secure_media"].(map[string]interface{})
 		reddit_video := secure_media["reddit_video"].(map[string]interface{})
 		fallback_url := reddit_video["fallback_url"]
-		return fmt.Sprint(fallback_url), fmt.Sprint(title), nil
+		return fmt.Sprint(fallback_url), nil
 	}
 
 	reddit_video := secure_media["reddit_video"].(map[string]interface{})
 	fallback_url := reddit_video["fallback_url"]
 
-	return fmt.Sprint(fallback_url), fmt.Sprint(title), nil
+	return fmt.Sprint(fallback_url), nil
 
 }
 
