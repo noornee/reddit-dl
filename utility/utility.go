@@ -38,13 +38,14 @@ func ParseJSONBody(file []byte) (string, string, error) {
 
 	var dataDump interface{}
 
-	err := json.Unmarshal(file, &dataDump)
-	if err != nil {
-		log.Println(err)
-	}
+	json.Unmarshal(file, &dataDump)
 
 	// traversing through it all to get the fallback_url
-	root := dataDump.([]interface{})
+	root, ok := dataDump.([]interface{})
+	if ok != true {
+		return "", "", errors.New("cannot parse body")
+	}
+
 	edge := root[0].(map[string]interface{})
 	data := edge["data"].(map[string]interface{})
 	children := data["children"].([]interface{})
@@ -83,7 +84,6 @@ func ParseJSONBody(file []byte) (string, string, error) {
 	return fmt.Sprint(fallback_url), fmt.Sprint(title), nil
 
 }
-
 
 func GetMediaUrl(url string) (video, audio string) {
 

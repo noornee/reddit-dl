@@ -34,7 +34,7 @@ func ParseUrl(raw string) (url string) {
 }
 
 // Get the url response body
-func GetBody(url string) []byte {
+func GetBody(url string) ([]byte, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	check(err)
@@ -42,13 +42,17 @@ func GetBody(url string) []byte {
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 
 	resp, err := http.DefaultClient.Do(req)
-	check(err)
+
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	check(err)
 
-	return body
+	return body, nil
 
 }
 

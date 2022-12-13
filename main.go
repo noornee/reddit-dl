@@ -32,7 +32,11 @@ func main() {
 
 	url := handler.ParseUrl(raw_url)
 
-	body := handler.GetBody(url)
+	body, err := handler.GetBody(url)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	fallback_url, title, err := utility.ParseJSONBody(body)
 
