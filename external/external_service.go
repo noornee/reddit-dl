@@ -3,7 +3,6 @@ package external
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -66,7 +65,7 @@ func aria2c_nos(file, title string) {
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		fmt.Println(err)
+		utility.ErrorLog.Println(err)
 	}
 
 }
@@ -78,7 +77,7 @@ func ffmpeg(filename string) {
 
 	files, err := ioutil.ReadDir(temp_dir)
 	if err != nil {
-		log.Println(err)
+		utility.ErrorLog.Println(err)
 	}
 
 	var aud, vid string
@@ -92,9 +91,11 @@ func ffmpeg(filename string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	fmt.Println("merging files together")
+	utility.InfoLog.Printf("Merging files into \t%s", filename)
+
 	if err := cmd.Run(); err != nil {
-		fmt.Println(err)
+		utility.ErrorLog.Println(err)
 	}
+	utility.InfoLog.Println("Done")
 
 }

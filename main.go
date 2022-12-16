@@ -34,8 +34,7 @@ func main() {
 
 	body, err := handler.GetBody(url)
 	if err != nil {
-		log.Fatal(err)
-		return
+		utility.ErrorLog.Fatal(err)
 	}
 
 	fallback_url, err := utility.ParseJSONBody(body)

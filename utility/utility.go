@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -15,7 +14,7 @@ import (
 func CreateDir() string {
 	dir, err := ioutil.TempDir("", "reddit")
 	if err != nil {
-		log.Fatal(err)
+		ErrorLog.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
 

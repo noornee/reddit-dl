@@ -3,21 +3,23 @@ package handler
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/noornee/reddit-dl/utility"
 )
 
 func check(err error) {
 	if err != nil {
-		log.Println(err)
+		utility.ErrorLog.Println(err)
 	}
 }
 
 // Parses the url and appends .json to it
 func ParseUrl(raw string) (url, title string) {
-	fmt.Println("Parsing the url...")
+
+	utility.InfoLog.Println("Parsing The URL")
 
 	re, _ := regexp.Compile("www")
 
@@ -52,6 +54,8 @@ func GetBody(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	utility.InfoLog.Println("Getting the JSON body")
 
 	defer resp.Body.Close()
 
