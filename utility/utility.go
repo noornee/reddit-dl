@@ -39,6 +39,7 @@ func ParseJSONBody(file []byte) (string, error) {
 
 	json.Unmarshal(file, &dataDump)
 
+	// ---------------------------------------------------------------------------------------------------- //
 	// traversing through it all to get the fallback_url
 	root, ok := dataDump.([]interface{})
 	if ok != true {
@@ -51,23 +52,10 @@ func ParseJSONBody(file []byte) (string, error) {
 	data1 := children[0].(map[string]interface{})
 	data2 := data1["data"].(map[string]interface{})
 
-	//is_reddit_media_domain := data2["is_reddit_media_domain"]
+	secure_media, ok := data2["secure_media"].(map[string]interface{})
 
-	// if the video isnt hosted on reddit
-	//if is_reddit_media_domain == false {
-	//return "", "", errors.New("Cannot download files that arent hosted on reddit")
-	//}
-
-	secure_media, ok := data2["secure_media"].(map[string]interface{}) // handle cross_post here
-
-	// for gifs
-	if secure_media == nil {
-		url_overridden_by_dest := data2["url_overridden_by_dest"]
-		return fmt.Sprint(url_overridden_by_dest), nil
-	}
-
-	// if it doesn have the underlying interface `ok` would be false
-	// i.e its a cross_post so this handles it
+	// ----------------------------------------CROSSPOST--------------------------------------------------- //
+	// if it doesn't have the underlying interface `ok` would be false then its a crosspost
 	if ok != true {
 		cross_post := data2["crosspost_parent_list"].([]interface{})
 		data3 := cross_post[0].(map[string]interface{})
@@ -77,11 +65,29 @@ func ParseJSONBody(file []byte) (string, error) {
 		return fmt.Sprint(fallback_url), nil
 	}
 
+	// --------------------------------FOR GIFS HOSTED ON REDDIT-------------------------------------------- //
+	if secure_media == nil {
+		url_overridden_by_dest := data2["url_overridden_by_dest"]
+		return fmt.Sprint(url_overridden_by_dest), nil
+	}
+
+	// --------------------------------FOR GIFS/VIDEO HOSTED ON GFYCAT.COM----------------------------------- //
+	oembed, ok := secure_media["oembed"].(map[string]interface{})
+	if ok {
+		provider_url := oembed["provider_url"]
+		thumbnail_url := oembed["thumbnail_url"]
+		if provider_url == "https://gfycat.com" {
+			new_url := strings.ReplaceAll(fmt.Sprint(thumbnail_url), "size_restricted.gif", "mobile.mp4")
+			return new_url, nil
+		}
+	}
+
+	// --------------------------------NORMAL REDDIT VIDEO------------------------------------------------- //
 	reddit_video := secure_media["reddit_video"].(map[string]interface{})
 	fallback_url := reddit_video["fallback_url"]
-
 	return fmt.Sprint(fallback_url), nil
 
+	// ---------------------------------------------------------------------------------------------------- //
 }
 
 func GetMediaUrl(url string) (video, audio string) {
