@@ -51,8 +51,12 @@ func ParseJSONBody(file []byte) (string, error) {
 	children := data["children"].([]interface{})
 	data1 := children[0].(map[string]interface{})
 	data2 := data1["data"].(map[string]interface{})
-
 	secure_media, ok := data2["secure_media"].(map[string]interface{})
+
+	if secure_media == nil {
+		url_overridden_by_dest := data2["url_overridden_by_dest"]
+		return fmt.Sprint(url_overridden_by_dest), nil
+	}
 
 	// ----------------------------------------CROSSPOST--------------------------------------------------- //
 	// if it doesn't have the underlying interface `ok` would be false then its a crosspost
@@ -63,12 +67,6 @@ func ParseJSONBody(file []byte) (string, error) {
 		reddit_video := secure_media["reddit_video"].(map[string]interface{})
 		fallback_url := reddit_video["fallback_url"]
 		return fmt.Sprint(fallback_url), nil
-	}
-
-	// --------------------------------FOR GIFS HOSTED ON REDDIT-------------------------------------------- //
-	if secure_media == nil {
-		url_overridden_by_dest := data2["url_overridden_by_dest"]
-		return fmt.Sprint(url_overridden_by_dest), nil
 	}
 
 	// --------------------------------FOR GIFS/VIDEO HOSTED ON GFYCAT.COM----------------------------------- //
