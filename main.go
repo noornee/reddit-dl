@@ -37,15 +37,23 @@ func main() {
 		utility.ErrorLog.Fatal(err)
 	}
 
-	fallback_url, err := utility.ParseJSONBody(body)
+	fallback_urls, err := utility.ParseJSONBody(body)
 
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	video, audio := utility.GetMediaUrl(fallback_url)
+	for _, v := range fallback_urls {
 
-	external.Setup(video, audio, title)
+		//video, audio := utility.GetMediaUrl(v)
+		if len(fallback_urls) < 1 {
+			video, audio := utility.GetMediaUrl(v)
+			external.Setup(video, audio, title)
+			//fmt.Println(video, title, audio)
+		} else {
+			external.Setup(v, "", title)
+		}
+	}
 
 }
