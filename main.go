@@ -32,27 +32,28 @@ func main() {
 
 	url, title := handler.ParseUrl(raw_url)
 
+	// body -> the url response body in form of []bytes
 	body, err := handler.GetBody(url)
 	if err != nil {
 		utility.ErrorLog.Fatal(err)
 	}
 
-	fallback_urls, err := utility.ParseJSONBody(body)
-
+	// media -> an array of string(s) containing the url
+	media_url, err := utility.ParseJSONBody(body)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	for _, v := range fallback_urls {
+	for _, url := range media_url {
 
-		//video, audio := utility.GetMediaUrl(v)
-		if len(fallback_urls) < 1 {
-			video, audio := utility.GetMediaUrl(v)
-			external.Setup(video, audio, title)
-			//fmt.Println(video, title, audio)
+		// if it's a reddit gallery kinda image, then it's going to contain multiple urls
+		// its length would be greater than 1
+		if len(media_url) < 1 {
+			media, audio := utility.GetMediaUrl(url)
+			external.Setup(media, audio, title)
 		} else {
-			external.Setup(v, "", title)
+			external.Setup(url, "", title)
 		}
 	}
 

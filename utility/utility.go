@@ -32,7 +32,7 @@ func IsFlagPassed(name string) bool {
 	return found
 }
 
-// returns the fallback_url and title
+// parses the json body and returns the parsed url(s) and an error
 func ParseJSONBody(file []byte) ([]string, error) {
 
 	var urls []string
@@ -116,19 +116,19 @@ func ParseJSONBody(file []byte) ([]string, error) {
 	// ---------------------------------------------------------------------------------------------------- //
 }
 
-func GetMediaUrl(url string) (video, audio string) {
+func GetMediaUrl(url string) (media, audio string) {
 
 	// checks if its a gif
 	if strings.HasSuffix(url, ".gif") {
-		video = url
+		media = url
 		audio = ""
-		return video, audio
+		return media, audio
 	}
 
 	// normal video
-	video = strings.Split(url, "?")[0]
+	media = strings.Split(url, "?")[0]
 	re, _ := regexp.Compile("_[0-9]+")
-	audio = re.ReplaceAllString(video, "_audio")
+	audio = re.ReplaceAllString(media, "_audio")
 
-	return video, audio
+	return media, audio
 }

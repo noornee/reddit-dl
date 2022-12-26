@@ -13,27 +13,27 @@ import (
 
 var temp_dir string = utility.CreateDir()
 
-func Setup(video, audio, title string) {
+func Setup(media_url, audio_url, title string) {
 
-	if audio != "" {
-		status_code, mime := handler.GetHead(audio)
+	if audio_url != "" {
+		status_code, mime := handler.GetHead(audio_url)
 
 		if status_code == 200 && !strings.Contains(mime, "image") {
-			aria2c(video, audio)
+			aria2c(media_url, audio_url)
 			ffmpeg(title)
 			return
 		}
 
 	}
 
-	aria2c_nos(video, title)
+	aria2c_nos(media_url, title)
 
 }
 
 // download files[video,audio] with aria2c
-func aria2c(video, audio string) {
+func aria2c(media_url, audio_url string) {
 
-	cmd := exec.Command("aria2c", "-d", temp_dir, "-Z", video, audio)
+	cmd := exec.Command("aria2c", "-d", temp_dir, "-Z", media_url, audio_url)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -43,22 +43,22 @@ func aria2c(video, audio string) {
 
 }
 
-// download files[video/gif/image] with aria2c
-func aria2c_nos(file, title string) {
+// download files[video/gif/image](files with no sound) with aria2c
+func aria2c_nos(media_url, title string) {
 
 	var cmd *exec.Cmd
 
-	_, mime_type := handler.GetHead(file)
+	_, mime_type := handler.GetHead(media_url)
 
 	switch mime_type {
 	case "image/jpeg":
-		cmd = exec.Command("aria2c", file, "-o", title+".jpg")
+		cmd = exec.Command("aria2c", media_url, "-o", title+".jpg")
 	case "image/png":
-		cmd = exec.Command("aria2c", file, "-o", title+".png")
+		cmd = exec.Command("aria2c", media_url, "-o", title+".png")
 	case "image/gif":
-		cmd = exec.Command("aria2c", file, "-o", title+".gif")
+		cmd = exec.Command("aria2c", media_url, "-o", title+".gif")
 	default:
-		cmd = exec.Command("aria2c", file, "-o", title+".mp4")
+		cmd = exec.Command("aria2c", media_url, "-o", title+".mp4")
 	}
 
 	cmd.Stdout = os.Stdout
