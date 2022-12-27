@@ -65,7 +65,6 @@ func ParseJSONBody(file []byte) ([]string, error) {
 			new_media_url := strings.ReplaceAll(fmt.Sprint(media_url), "amp;", "")
 			urls = append(urls, fmt.Sprint(new_media_url))
 		}
-		fmt.Println(urls)
 		return urls, nil
 	}
 
@@ -104,6 +103,8 @@ func ParseJSONBody(file []byte) ([]string, error) {
 			urls = append(urls, fmt.Sprint(new_url))
 			return urls, nil
 
+		} else {
+			return urls, errors.New(fmt.Sprintf("unsupported provider \"%s\"", provider_url))
 		}
 	}
 
