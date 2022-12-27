@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"os"
 	"strings"
 
+	//"github.com/noornee/reddit-dl/pkg/external"
 	"github.com/noornee/reddit-dl/external"
 	"github.com/noornee/reddit-dl/handler"
 	"github.com/noornee/reddit-dl/utility"
@@ -41,15 +42,16 @@ func main() {
 	// media -> an array of string(s) containing the url
 	media_url, err := utility.ParseJSONBody(body)
 	if err != nil {
-		log.Fatal(err)
+		utility.ErrorLog.Fatal(err)
 		return
 	}
+	fmt.Println(media_url)
 
 	for _, url := range media_url {
 
 		// if it's a reddit gallery kinda image, then it's going to contain multiple urls
 		// its length would be greater than 1
-		if len(media_url) < 1 {
+		if len(media_url) <= 1 {
 			media, audio := utility.GetMediaUrl(url)
 			external.Setup(media, audio, title)
 		} else {
