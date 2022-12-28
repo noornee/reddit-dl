@@ -9,6 +9,7 @@ import (
 
 	"github.com/noornee/reddit-dl/handler"
 	"github.com/noornee/reddit-dl/utility"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 var temp_dir string = utility.CreateDir()
@@ -20,7 +21,7 @@ func Setup(media_url, audio_url, title string) {
 
 		if status_code == 200 && !strings.Contains(mime, "image") {
 			aria2c(media_url, audio_url)
-			ffmpeg(title)
+			merger(title)
 			return
 		}
 
@@ -71,7 +72,7 @@ func aria2c_nos(media_url, title string) {
 }
 
 // merge downoladed files[video,audio] with ffmpeg
-func ffmpeg(filename string) {
+func merger(filename string) {
 
 	filename = filename + ".mp4"
 
@@ -87,15 +88,20 @@ func ffmpeg(filename string) {
 		aud = temp_dir + "/" + files[1].Name()
 	}
 
-	cmd := exec.Command("ffmpeg", "-y", "-v", "quiet", "-stats", "-i", vid, "-i", aud, filename)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	in1 := ffmpeg.Input(vid)
+	in2 := ffmpeg.Input(aud)
 
 	utility.InfoLog.Printf("Merging files into \t%s", filename)
+	fmt.Println()
+	err = ffmpeg.Concat([]*ffmpeg.Stream{in1, in2}, ffmpeg.KwArgs{"v": 1, "a": 1}).
+		Output(filename, ffmpeg.KwArgs{"v": "quiet"}).
+		GlobalArgs("-stats").
+		OverWriteOutput().ErrorToStdOut().Run()
 
-	if err := cmd.Run(); err != nil {
+	if err != nil {
 		utility.ErrorLog.Println(err)
 	}
+
 	utility.InfoLog.Println("Done")
 
 }
