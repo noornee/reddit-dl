@@ -6,33 +6,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"regexp"
 	"strings"
 )
-
-func CreateDir() string {
-	dir, err := ioutil.TempDir("", "reddit")
-	if err != nil {
-		ErrorLog.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-
-	return dir
-}
-
-//func CreateDir() string {
-
-//const temp_dir = "temp"
-
-//var err = os.Mkdir(temp_dir, os.ModePerm)
-//if err != nil {
-//ErrorLog.Println(err)
-//}
-
-//return temp_dir
-//}
 
 // returns true if a valid flag was passed
 func IsFlagPassed(name string) bool {
