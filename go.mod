@@ -2,6 +2,10 @@ module github.com/noornee/reddit-dl
 
 go 1.19
 
+retract (
+    v0.5.1 // Published accidentally.
+)
+
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/u2takey/ffmpeg-go v0.4.1
