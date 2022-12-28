@@ -10,7 +10,7 @@ a reddit video/gif downloader
 ## STEPS
 
 ```
-go install github.com/noornee/reddit-dl@latest
+go install github.com/noornee/reddit-dl/cmd/reddit-dl@latest
 ```
 
 make sure you have `ffmpeg` installed before running the following command:
@@ -19,7 +19,7 @@ make sure you have `ffmpeg` installed before running the following command:
 `reddit-dl -url '<reddit_url>'`
 
 ### Without Flags
-`reddit-dl '<reddit__url>'`
+`reddit-dl '<reddit_url>'`
  
 
 ### Note:
