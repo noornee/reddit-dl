@@ -22,6 +22,18 @@ func CreateDir() string {
 	return dir
 }
 
+//func CreateDir() string {
+
+//const temp_dir = "temp"
+
+//var err = os.Mkdir(temp_dir, os.ModePerm)
+//if err != nil {
+//ErrorLog.Println(err)
+//}
+
+//return temp_dir
+//}
+
 // returns true if a valid flag was passed
 func IsFlagPassed(name string) bool {
 	found := false
