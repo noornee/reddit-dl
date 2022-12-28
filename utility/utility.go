@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+// hashMap -> map of string to empty interface. this is an alias for map[string]interface{}
+type hashMap = map[string]any
+
 // returns true if a valid flag was passed
 func IsFlagPassed(name string) bool {
 	found := false
@@ -28,32 +31,30 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 	var dataDump any
 
-	//json.Unmarshal(file, &dataDump)
 	err := json.NewDecoder(bytes.NewReader(file)).Decode(&dataDump)
 	if err != nil {
 		return urls, err
 	}
 
-	// ---------------------------------------------------------------------------------------------------- //
-	// traversing through it all to get the fallback_url
-	root, ok := dataDump.([]interface{})
+	// -------------------------------------BASE------------------------------------------------------------ //
+	root, ok := dataDump.([]any)
 	if ok != true {
 		return urls, errors.New("cannot parse body")
 	}
 
-	edge := root[0].(map[string]any)
-	data := edge["data"].(map[string]any)
+	edge := root[0].(hashMap)
+	data := edge["data"].(hashMap)
 	children := data["children"].([]any)
-	data1 := children[0].(map[string]any)
-	data2 := data1["data"].(map[string]any)
+	data1 := children[0].(hashMap)
+	data2 := data1["data"].(hashMap)
 
 	// ------------------------------------GALLERY---------------------------------------------------------- //
-	// this is for multiple pictures that are posted --> reddit gallery
-	metadata, ok := data2["media_metadata"].(map[string]any)
+	// this is for multiple pictures in a poste --> reddit gallery
+	metadata, ok := data2["media_metadata"].(hashMap)
 	if ok {
 		for i := range metadata {
-			media_id := metadata[i].(map[string]any)
-			media_s := media_id["s"].(map[string]any)
+			media_id := metadata[i].(hashMap)
+			media_s := media_id["s"].(hashMap)
 			media_url := media_s["u"]
 			new_media_url := strings.ReplaceAll(fmt.Sprint(media_url), "amp;", "")
 			urls = append(urls, fmt.Sprint(new_media_url))
@@ -62,8 +63,7 @@ func ParseJSONBody(file []byte) ([]string, error) {
 	}
 
 	// ---------------------------------------------------------------------------------------------------- //
-
-	secure_media, ok := data2["secure_media"].(map[string]any)
+	secure_media, ok := data2["secure_media"].(hashMap)
 
 	if secure_media == nil {
 		// for normal image/gif
@@ -77,9 +77,9 @@ func ParseJSONBody(file []byte) ([]string, error) {
 	// for reddit cross post video
 	if ok != true {
 		cross_post := data2["crosspost_parent_list"].([]any)
-		data3 := cross_post[0].(map[string]any)
-		secure_media := data3["secure_media"].(map[string]any)
-		reddit_video := secure_media["reddit_video"].(map[string]any)
+		data3 := cross_post[0].(hashMap)
+		secure_media := data3["secure_media"].(hashMap)
+		reddit_video := secure_media["reddit_video"].(hashMap)
 		fallback_url := reddit_video["fallback_url"]
 		urls = append(urls, fmt.Sprint(fallback_url))
 		return urls, nil
@@ -87,7 +87,7 @@ func ParseJSONBody(file []byte) ([]string, error) {
 	}
 
 	// --------------------------------FOR GIFS/VIDEO HOSTED ON GFYCAT.COM----------------------------------- //
-	oembed, ok := secure_media["oembed"].(map[string]any)
+	oembed, ok := secure_media["oembed"].(hashMap)
 	if ok {
 		provider_url := oembed["provider_url"]
 		thumbnail_url := oembed["thumbnail_url"]
@@ -102,7 +102,7 @@ func ParseJSONBody(file []byte) ([]string, error) {
 	}
 
 	// --------------------------------NORMAL REDDIT VIDEO------------------------------------------------- //
-	reddit_video := secure_media["reddit_video"].(map[string]any)
+	reddit_video := secure_media["reddit_video"].(hashMap)
 	fallback_url := reddit_video["fallback_url"]
 	urls = append(urls, fmt.Sprint(fallback_url))
 	return urls, nil
