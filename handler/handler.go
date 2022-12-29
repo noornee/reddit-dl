@@ -14,11 +14,6 @@ func ParseUrl(raw string) (url, title string) {
 
 	utility.InfoLog.Println("Parsing The URL")
 
-	//re, _ := regexp.Compile("www")
-
-	// i.e. 'https://www.reddit.com/...' -> 'https://old.reddit.com/...'
-	//subdomain := re.ReplaceAllString(raw, "old")
-	// strings.Replace is lighter than regexp
 	subdomain := strings.Replace(raw, "www.reddit.com", "old.reddit.com", -1)
 
 	split_url := strings.Split(subdomain, "?")[0]

@@ -15,7 +15,12 @@ func createDir() string {
 
 	const temp_dir = ".reddit_temp"
 
-	var err = os.Mkdir(temp_dir, os.ModePerm)
+	// if temp_dir exists, delete
+	if _, err := os.Stat(temp_dir); !os.IsNotExist(err) {
+		os.RemoveAll(temp_dir)
+	}
+
+	err := os.Mkdir(temp_dir, os.ModePerm)
 	if err != nil {
 		utility.ErrorLog.Println(err)
 	}

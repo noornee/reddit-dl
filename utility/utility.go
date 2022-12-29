@@ -26,7 +26,7 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 	var (
 		dataDump     model.Reddit   // data dump
-		metaDataDump map[string]any // metadata map for reddit gallery -> line 44
+		metaDataDump map[string]any // metadata map for reddit gallery -> line 46
 		urls         []string       // slice of urls
 	)
 
@@ -65,7 +65,6 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 			url := data.URLOverriddenByDest
 
-			fmt.Println(url)
 			urls = append(urls, url)
 			return urls, nil
 
@@ -125,6 +124,8 @@ func GetMediaUrl(url string) (media, audio string) {
 	re, _ := regexp.Compile("_[0-9]+")
 	audio = re.ReplaceAllString(media, "_audio")
 
+	// this is for external videos/gif i.e. from gfycat
+	// it wouldnt match the regex pattern
 	if media == audio {
 		return media, ""
 	}
