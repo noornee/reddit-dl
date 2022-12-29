@@ -1,17 +1,14 @@
 package utility
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"regexp"
 	"strings"
-)
 
-// hashMap -> map of string to empty interface. this is an alias for map[string]interface{}
-type hashMap = map[string]any
+	"github.com/noornee/reddit-dl/model"
+)
 
 // returns true if a valid flag was passed
 func IsFlagPassed(name string) bool {
@@ -27,101 +24,91 @@ func IsFlagPassed(name string) bool {
 // parses the json body and returns the parsed url(s) and an error
 func ParseJSONBody(file []byte) ([]string, error) {
 
-	var urls []string
+	var (
+		dataDump     model.Reddit   // data dump
+		metaDataDump map[string]any // metadata map for reddit gallery -> line 44
+		urls         []string       // slice of urls
+	)
 
-	var dataDump any
-
-	err := json.NewDecoder(bytes.NewReader(file)).Decode(&dataDump)
+	err := json.Unmarshal(file, &dataDump)
 	if err != nil {
 		return urls, err
 	}
 
-	// -------------------------------------BASE------------------------------------------------------------ //
-	root, ok := dataDump.([]any)
-	if !ok {
-		return urls, errors.New("cannot parse body")
-	}
+	for _, v := range dataDump {
 
-	// use a struct.. this is really, really hard to read & use!
-	edge := root[0].(hashMap)
-	data := edge["data"].(hashMap)
-	children := data["children"].([]any)
-	data1 := children[0].(hashMap)
-	data2 := data1["data"].(hashMap)
+		data := v.Data.Children[0].Data
 
-	// ------------------------------------GALLERY---------------------------------------------------------- //
-	// this is for multiple pictures in a poste --> reddit gallery
-	metadata, ok := data2["media_metadata"].(hashMap)
-	if ok {
-		for i := range metadata {
-			media_id := metadata[i].(hashMap)
-			media_s := media_id["s"].(hashMap)
-			media_url := media_s["u"]
-			new_media_url := strings.ReplaceAll(media_url.(string), "amp;", "")
-			urls = append(urls, new_media_url)
+		// this is for multiple pictures posted --> reddit gallery
+		if data.MediaMetadata != nil {
+
+			metadata := data.MediaMetadata
+			err := json.Unmarshal(metadata, &metaDataDump)
+			if err != nil {
+				return urls, err
+			}
+
+			for i := range metaDataDump {
+				media_id := metaDataDump[i].(map[string]any)
+				media_s := media_id["s"].(map[string]any)
+				media_url := media_s["u"]
+				url := strings.ReplaceAll(media_url.(string), "amp;", "")
+				urls = append(urls, url)
+
+			}
+
+			return urls, nil
 		}
-		return urls, nil
-	}
 
-	// ---------------------------------------------------------------------------------------------------- //
-	secure_media, ok := data2["secure_media"].(hashMap)
+		// if securemedia is nil then it's a normal image/gif
+		if data.SecureMedia.RedditVideo == nil && data.SecureMedia.Oembed == nil {
 
-	if secure_media == nil {
-		// for normal image/gif
-		url_overridden_by_dest := data2["url_overridden_by_dest"]
-		urls = append(urls, url_overridden_by_dest.(string))
-		return urls, nil
-	}
+			url := data.URLOverriddenByDest
 
-	// ----------------------------------------CROSSPOST--------------------------------------------------- //
-	// if it doesn't have the underlying interface `ok` would be false then its a crosspost
-	// for reddit cross post video
-	if !ok {
-		cross_post := data2["crosspost_parent_list"].([]any)
-		data3 := cross_post[0].(hashMap)
-		secure_media := data3["secure_media"].(hashMap)
-		reddit_video := secure_media["reddit_video"].(hashMap)
-		fallback_url := reddit_video["fallback_url"]
-		urls = append(urls, fallback_url.(string))
-		return urls, nil
-
-	}
-
-	// --------------------------------"PREVIEW" VIDEOS--------------------------------------------------- //
-	preview := data2["preview"].(hashMap)
-
-	reddit_video_preview := preview["reddit_video_preview"].(hashMap)
-
-	fallbackurl, ok := reddit_video_preview["fallback_url"]
-
-	if ok {
-		urls = append(urls, fallbackurl.(string))
-
-		return urls, nil
-	}
-
-	// --------------------------------FOR GIFS/VIDEO HOSTED ON GFYCAT.COM----------------------------------- //
-	oembed, ok := secure_media["oembed"].(hashMap)
-	if ok {
-		provider_url := oembed["provider_url"]
-		thumbnail_url := oembed["thumbnail_url"]
-		if provider_url == "https://gfycat.com" {
-			new_url := strings.ReplaceAll(thumbnail_url.(string), "size_restricted.gif", "mobile.mp4")
-			urls = append(urls, new_url)
+			fmt.Println(url)
+			urls = append(urls, url)
 			return urls, nil
 
-		} else {
-			return urls, fmt.Errorf("unsupported provider \"%s\"", provider_url)
 		}
+
+		// for crossposts videos
+		if data.CrossPost != nil {
+
+			url := data.CrossPost[0].SecureMedia.RedditVideo.FallbackURL
+			urls = append(urls, url)
+			return urls, nil
+
+		}
+
+		// for external providers --> specifically gfycat.com
+		if data.SecureMedia.Oembed != nil {
+
+			gfycat := "https://gfycat.com"
+			provider_url := data.SecureMedia.Oembed.ProviderURL
+
+			if provider_url == gfycat {
+				url := strings.ReplaceAll(data.SecureMedia.Oembed.ThumbnailURL, "size_restricted.gif", "mobile.mp4")
+				urls = append(urls, url)
+				fmt.Println(urls)
+				return urls, nil
+			} else {
+				return urls, fmt.Errorf("unsupported provider \"%s\"", provider_url)
+			}
+
+		}
+
+		// for normal reddit video
+		if data.SecureMedia.RedditVideo != nil {
+
+			url := data.SecureMedia.RedditVideo.FallbackURL
+			urls = append(urls, url)
+			return urls, nil
+
+		}
+
 	}
 
-	// --------------------------------NORMAL REDDIT VIDEO------------------------------------------------- //
-	reddit_video := secure_media["reddit_video"].(hashMap)
-	fallback_url := reddit_video["fallback_url"]
-	urls = append(urls, fallback_url.(string))
 	return urls, nil
-
-	// ---------------------------------------------------------------------------------------------------- //
 }
 
 func GetMediaUrl(url string) (media, audio string) {
@@ -137,6 +124,10 @@ func GetMediaUrl(url string) (media, audio string) {
 	media = strings.Split(url, "?")[0]
 	re, _ := regexp.Compile("_[0-9]+")
 	audio = re.ReplaceAllString(media, "_audio")
+
+	if media == audio {
+		return media, ""
+	}
 
 	return media, audio
 }
