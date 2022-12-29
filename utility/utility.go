@@ -38,10 +38,11 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 	// -------------------------------------BASE------------------------------------------------------------ //
 	root, ok := dataDump.([]any)
-	if ok != true {
+	if !ok {
 		return urls, errors.New("cannot parse body")
 	}
 
+	// use a struct.. this is really, really hard to read & use!
 	edge := root[0].(hashMap)
 	data := edge["data"].(hashMap)
 	children := data["children"].([]any)
@@ -56,8 +57,8 @@ func ParseJSONBody(file []byte) ([]string, error) {
 			media_id := metadata[i].(hashMap)
 			media_s := media_id["s"].(hashMap)
 			media_url := media_s["u"]
-			new_media_url := strings.ReplaceAll(fmt.Sprint(media_url), "amp;", "")
-			urls = append(urls, fmt.Sprint(new_media_url))
+			new_media_url := strings.ReplaceAll(media_url.(string), "amp;", "")
+			urls = append(urls, new_media_url)
 		}
 		return urls, nil
 	}
@@ -68,22 +69,35 @@ func ParseJSONBody(file []byte) ([]string, error) {
 	if secure_media == nil {
 		// for normal image/gif
 		url_overridden_by_dest := data2["url_overridden_by_dest"]
-		urls = append(urls, fmt.Sprint(url_overridden_by_dest))
+		urls = append(urls, url_overridden_by_dest.(string))
 		return urls, nil
 	}
 
 	// ----------------------------------------CROSSPOST--------------------------------------------------- //
 	// if it doesn't have the underlying interface `ok` would be false then its a crosspost
 	// for reddit cross post video
-	if ok != true {
+	if !ok {
 		cross_post := data2["crosspost_parent_list"].([]any)
 		data3 := cross_post[0].(hashMap)
 		secure_media := data3["secure_media"].(hashMap)
 		reddit_video := secure_media["reddit_video"].(hashMap)
 		fallback_url := reddit_video["fallback_url"]
-		urls = append(urls, fmt.Sprint(fallback_url))
+		urls = append(urls, fallback_url.(string))
 		return urls, nil
 
+	}
+
+	// --------------------------------"PREVIEW" VIDEOS--------------------------------------------------- //
+	preview := data2["preview"].(hashMap)
+
+	reddit_video_preview := preview["reddit_video_preview"].(hashMap)
+
+	fallbackurl, ok := reddit_video_preview["fallback_url"]
+
+	if ok {
+		urls = append(urls, fallbackurl.(string))
+
+		return urls, nil
 	}
 
 	// --------------------------------FOR GIFS/VIDEO HOSTED ON GFYCAT.COM----------------------------------- //
@@ -92,19 +106,19 @@ func ParseJSONBody(file []byte) ([]string, error) {
 		provider_url := oembed["provider_url"]
 		thumbnail_url := oembed["thumbnail_url"]
 		if provider_url == "https://gfycat.com" {
-			new_url := strings.ReplaceAll(fmt.Sprint(thumbnail_url), "size_restricted.gif", "mobile.mp4")
-			urls = append(urls, fmt.Sprint(new_url))
+			new_url := strings.ReplaceAll(thumbnail_url.(string), "size_restricted.gif", "mobile.mp4")
+			urls = append(urls, new_url)
 			return urls, nil
 
 		} else {
-			return urls, errors.New(fmt.Sprintf("unsupported provider \"%s\"", provider_url))
+			return urls, fmt.Errorf("unsupported provider \"%s\"", provider_url)
 		}
 	}
 
 	// --------------------------------NORMAL REDDIT VIDEO------------------------------------------------- //
 	reddit_video := secure_media["reddit_video"].(hashMap)
 	fallback_url := reddit_video["fallback_url"]
-	urls = append(urls, fmt.Sprint(fallback_url))
+	urls = append(urls, fallback_url.(string))
 	return urls, nil
 
 	// ---------------------------------------------------------------------------------------------------- //

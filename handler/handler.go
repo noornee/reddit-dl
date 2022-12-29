@@ -4,27 +4,22 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"github.com/noornee/reddit-dl/utility"
 )
-
-func check(err error) {
-	if err != nil {
-		utility.ErrorLog.Println(err)
-	}
-}
 
 // Parses the url and appends .json to it
 func ParseUrl(raw string) (url, title string) {
 
 	utility.InfoLog.Println("Parsing The URL")
 
-	re, _ := regexp.Compile("www")
+	//re, _ := regexp.Compile("www")
 
 	// i.e. 'https://www.reddit.com/...' -> 'https://old.reddit.com/...'
-	subdomain := re.ReplaceAllString(raw, "old")
+	//subdomain := re.ReplaceAllString(raw, "old")
+	// strings.Replace is lighter than regexp
+	subdomain := strings.Replace(raw, "www.reddit.com", "old.reddit.com", -1)
 
 	split_url := strings.Split(subdomain, "?")[0]
 
@@ -45,7 +40,9 @@ func ParseUrl(raw string) (url, title string) {
 func GetBody(url string) ([]byte, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
-	check(err)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 
@@ -60,7 +57,9 @@ func GetBody(url string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
-	check(err)
+	if err != nil {
+		return nil, err
+	}
 
 	return body, nil
 
@@ -69,10 +68,14 @@ func GetBody(url string) ([]byte, error) {
 func GetHead(url string) (status_code int, content_type string) {
 
 	req, err := http.NewRequest("HEAD", url, nil)
-	check(err)
+	if err != nil {
+		return 0, ""
+	}
 
 	resp, err := http.DefaultClient.Do(req)
-	check(err)
+	if err != nil {
+		return 0, ""
+	}
 
 	defer resp.Body.Close()
 
