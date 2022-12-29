@@ -19,6 +19,13 @@ func main() {
 	passed := utility.IsFlagPassed(raw_url)
 
 	// if a flag isnt passed and a url is passed, assign the url to raw_url
+
+	/*
+		perhaps this?
+		if !(len(raw_url) > 0) {
+			...
+		}
+	*/
 	if len(os.Args) > 1 && !strings.HasSuffix(os.Args[1], "-url") {
 		raw_url = os.Args[1]
 	} else {
@@ -41,7 +48,7 @@ func main() {
 	media_url, err := utility.ParseJSONBody(body)
 	if err != nil {
 		utility.ErrorLog.Fatal(err)
-		return
+		// return Fatal calls Print, then os.Exit(1), can't return.
 	}
 	//fmt.Println(media_url)
 

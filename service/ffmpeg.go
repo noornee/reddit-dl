@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/noornee/reddit-dl/utility"
@@ -16,7 +14,8 @@ func video_merger(filename string) {
 
 	filename = filename + ".mp4"
 
-	files, err := ioutil.ReadDir(temp_dir)
+	// use os.ReadDir instead of ioutil, as it's deprecated since go 1.16
+	files, err := os.ReadDir(temp_dir)
 
 	if err != nil {
 		utility.ErrorLog.Println(err)
@@ -33,8 +32,7 @@ func video_merger(filename string) {
 	in1 := ffmpeg.Input(vid)
 	in2 := ffmpeg.Input(aud)
 
-	utility.InfoLog.Printf("Merging files into \t%s", filename)
-	fmt.Println()
+	utility.InfoLog.Printf("Merging files into \t%s\r\n", filename)
 
 	err = ffmpeg.Concat([]*ffmpeg.Stream{in1, in2}, ffmpeg.KwArgs{"v": 1, "a": 1}).
 		Output(filename, ffmpeg.KwArgs{"v": "quiet"}).

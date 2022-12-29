@@ -103,7 +103,7 @@ Loop:
 		file_name := fmt.Sprintf("%s.mp4", title)
 		err := os.Rename(resp.Filename, file_name)
 		if err != nil {
-			fmt.Println(err)
+			utility.ErrorLog.Println(err)
 		}
 
 		utility.InfoLog.Printf("Download saved to %v \n", file_name)
