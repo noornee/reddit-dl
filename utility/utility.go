@@ -13,9 +13,9 @@ import (
 func ParseJSONBody(file []byte) ([]string, error) {
 
 	var (
-		dataDump     model.Reddit   // data dump
-		metaDataDump map[string]any // metadata map for reddit gallery -> line 46
-		urls         []string       // slice of urls
+		dataDump model.Reddit // data dump
+		//metaDataDump map[string]any // metadata map for reddit gallery -> line 46
+		urls []string // slice of urls
 	)
 
 	err := json.Unmarshal(file, &dataDump)
@@ -29,20 +29,10 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 		// this is for multiple pictures posted --> reddit gallery
 		if data.MediaMetadata != nil {
-
-			metadata := data.MediaMetadata
-			err := json.Unmarshal(metadata, &metaDataDump)
-			if err != nil {
-				return urls, err
-			}
-
-			for i := range metaDataDump {
-				media_id := metaDataDump[i].(map[string]any)
-				media_s := media_id["s"].(map[string]any)
-				media_url := media_s["u"]
-				url := strings.ReplaceAll(media_url.(string), "amp;", "")
+			for _, v := range data.MediaMetadata {
+				image_url := v.S.URL
+				url := strings.ReplaceAll(image_url, "amp;", "")
 				urls = append(urls, url)
-
 			}
 
 			return urls, nil

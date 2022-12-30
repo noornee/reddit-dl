@@ -1,12 +1,10 @@
 package model
 
-import "encoding/json"
-
 type Reddit []struct {
 	Data struct {
 		Children []struct {
 			Data struct {
-				MediaMetadata       json.RawMessage        `json:"media_metadata,omitempty"`
+				MediaMetadata       mediaMetadata          `json:"media_metadata,omitempty"`
 				SecureMedia         secureMedia            `json:"secure_media,omitempty"`
 				CrossPost           []*crosspostParentList `json:"crosspost_parent_list,omitempty"`
 				URLOverriddenByDest string                 `json:"url_overridden_by_dest"`
@@ -33,4 +31,10 @@ type oembed struct {
 type crosspostParentList struct {
 	SecureMedia         *secureMedia `json:"secure_media"`
 	URLOverriddenByDest string       `json:"url_overridden_by_dest"`
+}
+
+type mediaMetadata map[string]struct {
+	S struct {
+		URL string `json:"u"`
+	} `json:"s"`
 }
