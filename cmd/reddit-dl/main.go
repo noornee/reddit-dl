@@ -33,6 +33,7 @@ func main() {
 			url := ctx.String("url")
 			if url == "" {
 				cli.ShowAppHelp(ctx)
+				return nil
 			}
 
 			controller(url)

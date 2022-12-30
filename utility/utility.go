@@ -2,24 +2,12 @@ package utility
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/noornee/reddit-dl/model"
 )
-
-// returns true if a valid flag was passed
-func IsFlagPassed(name string) bool {
-	found := false
-	flag.Visit(func(f *flag.Flag) {
-		if f.Value.String() == name {
-			found = true
-		}
-	})
-	return found
-}
 
 // parses the json body and returns the parsed url(s) and an error
 func ParseJSONBody(file []byte) ([]string, error) {
