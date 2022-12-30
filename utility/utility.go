@@ -60,20 +60,19 @@ func ParseJSONBody(file []byte) ([]string, error) {
 			return urls, nil
 		}
 
-		// if securemedia is nil then it's a normal image/gif
-		if data.SecureMedia.RedditVideo == nil && data.SecureMedia.Oembed == nil {
+		// for crossposts videos
+		if data.CrossPost != nil {
 
-			url := data.URLOverriddenByDest
-
+			url := data.CrossPost[0].SecureMedia.RedditVideo.FallbackURL
 			urls = append(urls, url)
 			return urls, nil
 
 		}
 
-		// for crossposts videos
-		if data.CrossPost != nil {
+		// if securemedia is nil then it's a normal image/gif
+		if data.SecureMedia.RedditVideo == nil && data.SecureMedia.Oembed == nil {
 
-			url := data.CrossPost[0].SecureMedia.RedditVideo.FallbackURL
+			url := data.URLOverriddenByDest
 			urls = append(urls, url)
 			return urls, nil
 
