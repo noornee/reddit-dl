@@ -49,7 +49,10 @@ func main() {
 }
 
 func controller(raw_url string) {
-	url, title := handler.ParseUrl(raw_url)
+	url, title, err := handler.ParseUrl(raw_url)
+	if err != nil {
+		utility.ErrorLog.Fatal(err)
+	}
 
 	// body -> the url response body in form of []bytes
 	body, err := handler.GetBody(url)

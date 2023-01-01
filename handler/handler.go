@@ -10,7 +10,15 @@ import (
 )
 
 // Parses the url and appends .json to it
-func ParseUrl(raw string) (url, title string) {
+func ParseUrl(raw string) (url, title string, err error) {
+
+	valid_prefix := "https://www.reddit.com/r/"
+
+	// if it doesnt have a valid prefix then its probably not a reddit url
+	if !strings.HasPrefix(raw, valid_prefix) {
+		err = fmt.Errorf("url should start with '%s'", valid_prefix)
+		return "", "", err
+	}
 
 	utility.InfoLog.Println("Parsing The URL")
 
@@ -28,7 +36,7 @@ func ParseUrl(raw string) (url, title string) {
 	url_path := strings.Split(trim_url, "/")
 	title = url_path[len(url_path)-1]
 
-	return url, title
+	return url, title, nil
 }
 
 // Get the url response body
