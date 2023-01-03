@@ -1,5 +1,9 @@
 # reddit-dl
-a reddit video/gif downloader
+a reddit media downloader
+
+## DISCLAIMER:
+<b>reddit-dl</b> is still in its early stages and might be prone to bugs.
+the source code is also quite a mess but there's going to be improvements as time goes
 
 ## External Dependency used
 

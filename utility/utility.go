@@ -36,8 +36,16 @@ func ParseJSONBody(file []byte) ([]string, error) {
 			return urls, nil
 		}
 
-		// for crossposts videos
+		// for crossposts media
 		if data.CrossPost != nil {
+
+			// for cases where the crosspost media is nil
+			if data.CrossPost[0].SecureMedia == nil {
+				url := data.CrossPost[0].URLOverriddenByDest
+				urls = append(urls, url)
+				return urls, nil
+
+			}
 
 			// checks if its an embeded crosspost video
 			if data.CrossPost[0].SecureMedia.Oembed != nil {
