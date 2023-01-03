@@ -14,8 +14,7 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 	var (
 		dataDump model.Reddit // data dump
-		//metaDataDump map[string]any // metadata map for reddit gallery -> line 46
-		urls []string // slice of urls
+		urls     []string     // slice of urls
 	)
 
 	err := json.Unmarshal(file, &dataDump)
@@ -34,13 +33,30 @@ func ParseJSONBody(file []byte) ([]string, error) {
 				url := strings.ReplaceAll(image_url, "amp;", "")
 				urls = append(urls, url)
 			}
-
 			return urls, nil
 		}
 
 		// for crossposts videos
 		if data.CrossPost != nil {
 
+			// checks if its an embeded crosspost video
+			if data.CrossPost[0].SecureMedia.Oembed != nil {
+
+				gfycat := "https://gfycat.com"
+				provider_url := data.CrossPost[0].SecureMedia.Oembed.ProviderURL
+
+				switch provider_url {
+				case gfycat:
+					url := strings.ReplaceAll(data.CrossPost[0].SecureMedia.Oembed.ThumbnailURL, "size_restricted.gif", "mobile.mp4")
+					urls = append(urls, url)
+					fmt.Println(urls)
+					return urls, nil
+				default:
+					return urls, fmt.Errorf("unsupported provider \"%s\"", provider_url)
+				}
+			}
+
+			// normal crosspost video
 			url := data.CrossPost[0].SecureMedia.RedditVideo.FallbackURL
 			urls = append(urls, url)
 			return urls, nil
@@ -62,12 +78,13 @@ func ParseJSONBody(file []byte) ([]string, error) {
 			gfycat := "https://gfycat.com"
 			provider_url := data.SecureMedia.Oembed.ProviderURL
 
-			if provider_url == gfycat {
+			switch provider_url {
+			case gfycat:
 				url := strings.ReplaceAll(data.SecureMedia.Oembed.ThumbnailURL, "size_restricted.gif", "mobile.mp4")
 				urls = append(urls, url)
 				fmt.Println(urls)
 				return urls, nil
-			} else {
+			default:
 				return urls, fmt.Errorf("unsupported provider \"%s\"", provider_url)
 			}
 
