@@ -71,15 +71,6 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 		}
 
-		// if securemedia is nil then it's a normal image/gif
-		if data.SecureMedia.RedditVideo == nil && data.SecureMedia.Oembed == nil {
-
-			url := data.URLOverriddenByDest
-			urls = append(urls, url)
-			return urls, nil
-
-		}
-
 		// for external providers --> specifically gfycat.com
 		if data.SecureMedia.Oembed != nil {
 
@@ -93,20 +84,37 @@ func ParseJSONBody(file []byte) ([]string, error) {
 				fmt.Println(urls)
 				return urls, nil
 			default:
-				return urls, fmt.Errorf("unsupported provider \"%s\"", provider_url)
+				ErrorLog.Printf("%s is not a supported provider, going to fallback options", provider_url)
 			}
+		}
 
+		// MP4 variant of embedded video (likely NFSW, data.Preview.Images[0].Variants.GIF cannot be used here (even though there are two structs, obfuscated and nsfw, both are "obfuscated" (blurred.)))
+		if data.Preview.Video != nil {
+			url := data.Preview.Video.FallbackURL
+			urls = append(urls, url)
+			return urls, nil
+		}
+
+		// GIF variant of embedded video
+		if data.Preview.Images[0].Variants.GIF != nil {
+			url := data.Preview.Images[0].Variants.GIF.Source.URL
+			urls = append(urls, url)
+			return urls, nil
+		}
+
+		// if securemedia is nil then it's a normal image/gif
+		if data.SecureMedia.RedditVideo == nil && data.SecureMedia.Oembed == nil {
+			url := data.URLOverriddenByDest
+			urls = append(urls, url)
+			return urls, nil
 		}
 
 		// for normal reddit video
 		if data.SecureMedia.RedditVideo != nil {
-
 			url := data.SecureMedia.RedditVideo.FallbackURL
 			urls = append(urls, url)
 			return urls, nil
-
 		}
-
 	}
 
 	return urls, nil
@@ -114,8 +122,10 @@ func ParseJSONBody(file []byte) ([]string, error) {
 
 func GetMediaUrl(url string) (media, audio string) {
 
+	url = strings.ReplaceAll(url, "amp;", "")
+
 	// checks if its a gif
-	if strings.HasSuffix(url, ".gif") {
+	if strings.Contains(url, ".gif") {
 		media = url
 		audio = ""
 		return media, audio

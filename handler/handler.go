@@ -12,19 +12,30 @@ import (
 // Parses the url and appends .json to it
 func ParseUrl(raw string) (url, title string, err error) {
 
-	valid_prefix := "https://www.reddit.com/r/"
-
-	// if it doesnt have a valid prefix then its probably not a reddit url
-	if !strings.HasPrefix(raw, valid_prefix) {
-		err = fmt.Errorf("url should start with '%s'", valid_prefix)
-		return "", "", err
-	}
-
 	utility.InfoLog.Println("Parsing The URL")
 
-	subdomain := strings.Replace(raw, "www.reddit.com", "old.reddit.com", -1)
+	/*
+		this supports:
+		https://www.reddit.com/r/...
+		https://reddit.com/r/...
+		http://www.reddit.com/r/...
+		http://reddit.com/r/...
+		www.reddit.com/r/...
+		reddit.com/r/...
+	*/
+	if !(strings.Contains(raw, "http://") || strings.Contains(raw, "https://")) {
+		// No protocol was provided, append a https:// to the start of the url.
+		raw = "https://" + raw
+	}
 
-	split_url := strings.Split(subdomain, "?")[0]
+	// drop the 1st occourance of www.
+	raw = strings.Replace(raw, "www.", "", 1)
+	// and replace the 1st occourance of reddit.com with old.reddit.com
+	raw = strings.Replace(raw, "reddit.com", "old.reddit.com", 1)
+
+	// if it fails after those, the url that was sent is likely nonsense.
+
+	split_url := strings.Split(raw, "?")[0]
 
 	// remove any trailing slashes
 	trim_url := strings.TrimSuffix(split_url, "/")

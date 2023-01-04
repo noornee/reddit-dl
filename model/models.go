@@ -7,6 +7,7 @@ type Reddit []struct {
 				MediaMetadata       mediaMetadata          `json:"media_metadata,omitempty"`
 				SecureMedia         secureMedia            `json:"secure_media,omitempty"`
 				CrossPost           []*crosspostParentList `json:"crosspost_parent_list,omitempty"`
+				Preview             preview                `json:"preview,omitempty"`
 				URLOverriddenByDest string                 `json:"url_overridden_by_dest"`
 			} `json:"data"`
 		} `json:"children"`
@@ -18,6 +19,21 @@ type secureMedia struct {
 	Oembed      *oembed      `json:"oembed,omitempty"`
 }
 
+type preview struct {
+	Images []struct {
+		Variants struct {
+			GIF *struct {
+				Source struct {
+					URL string `json:"url"`
+				} `json:"source"`
+			} `json:"gif"`
+		} `json:"variants"`
+	} `json:"images"`
+
+	Video *struct {
+		FallbackURL string `json:"fallback_url"`
+	} `json:"reddit_video_preview"`
+}
 type redditVideo struct {
 	FallbackURL string `json:"fallback_url"`
 	HLS         string `json:"hls_url"`
