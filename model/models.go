@@ -7,7 +7,7 @@ type Reddit []struct {
 				MediaMetadata       mediaMetadata          `json:"media_metadata,omitempty"`
 				SecureMedia         secureMedia            `json:"secure_media,omitempty"`
 				CrossPost           []*crosspostParentList `json:"crosspost_parent_list,omitempty"`
-				Preview             preview                `json:"preview,omitempty"`
+				Preview             *preview               `json:"preview,omitempty"`
 				URLOverriddenByDest string                 `json:"url_overridden_by_dest"`
 			} `json:"data"`
 		} `json:"children"`
