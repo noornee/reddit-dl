@@ -28,17 +28,35 @@ func createDir() string {
 	return temp_dir
 }
 
+// download progress
+func download_progress(resp *grab.Response, t *time.Ticker) {
+Loop:
+	for {
+		select {
+		case <-t.C:
+			fmt.Printf("  transferred %v / %v bytes (%.2f%%)\n",
+				resp.BytesComplete(),
+				resp.Size(),
+				100*resp.Progress())
+
+		case <-resp.Done:
+			// download is complete
+			break Loop
+		}
+	}
+
+}
+
 func downloader(urls []string) {
 
 	var temp_dir string = createDir() + "/"
 
 	// create client
 	client := grab.NewClient()
+
 	for _, url := range urls {
 
 		req, _ := grab.NewRequest(temp_dir, url)
-
-		//fmt.Printf("Downloading %v...\n", req.URL())
 
 		resp := client.Do(req)
 
@@ -46,20 +64,7 @@ func downloader(urls []string) {
 		t := time.NewTicker(500 * time.Millisecond)
 		defer t.Stop()
 
-	Loop:
-		for {
-			select {
-			case <-t.C:
-				fmt.Printf("  transferred %v / %v bytes (%.2f%%)\n",
-					resp.BytesComplete(),
-					resp.Size(),
-					100*resp.Progress())
-
-			case <-resp.Done:
-				// download is complete
-				break Loop
-			}
-		}
+		download_progress(resp, t)
 
 		// check for errors
 		if err := resp.Err(); err != nil {
@@ -84,20 +89,7 @@ func downloader_nos(url, title string) {
 	t := time.NewTicker(500 * time.Millisecond)
 	defer t.Stop()
 
-Loop:
-	for {
-		select {
-		case <-t.C:
-			fmt.Printf("  transferred %v / %v bytes (%.2f%%)\n",
-				resp.BytesComplete(),
-				resp.Size(),
-				100*resp.Progress())
-
-		case <-resp.Done:
-			// download is complete
-			break Loop
-		}
-	}
+	download_progress(resp, t)
 
 	// check for errors
 	if err := resp.Err(); err != nil {
