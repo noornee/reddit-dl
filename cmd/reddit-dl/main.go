@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/noornee/reddit-dl/handler"
 	"github.com/noornee/reddit-dl/service"
@@ -68,16 +69,22 @@ func controller(raw_url string) {
 		utility.ErrorLog.Fatal(err)
 	}
 
+	var wg sync.WaitGroup
+
 	for _, url := range media_url {
+		wg.Add(1)
 
-		// if it's a reddit gallery(multiple images in a post), then it's going to contain multiple urls
-		// its length would be greater than 1
-		if len(media_url) <= 1 {
-			media, audio := utility.GetMediaUrl(url)
-			service.Setup(media, audio, title)
-		} else {
-			service.Setup(url, "", title)
-		}
+		go func(url string) {
+			defer wg.Done()
+			// if it's a reddit gallery(multiple images in a post), then it's going to contain multiple urls
+			// its length would be greater than 1
+			if len(media_url) <= 1 {
+				media, audio := utility.GetMediaUrl(url)
+				service.Setup(media, audio, title)
+			} else {
+				service.Setup(url, "", title)
+			}
+		}(url)
 	}
-
+	wg.Wait()
 }
