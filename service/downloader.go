@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cavaliergopher/grab/v3"
@@ -48,31 +49,35 @@ Loop:
 }
 
 func downloader(urls []string) {
-
 	var temp_dir string = createDir() + "/"
 
 	// create client
 	client := grab.NewClient()
 
+	var wg sync.WaitGroup
+
 	for _, url := range urls {
+		wg.Add(1)
 
-		req, _ := grab.NewRequest(temp_dir, url)
+		go func(url string) {
+			defer wg.Done()
+			req, _ := grab.NewRequest(temp_dir, url)
 
-		resp := client.Do(req)
+			resp := client.Do(req)
 
-		// start UI loop
-		t := time.NewTicker(500 * time.Millisecond)
-		defer t.Stop()
+			// start UI loop
+			t := time.NewTicker(500 * time.Millisecond)
+			defer t.Stop()
 
-		download_progress(resp, t)
+			download_progress(resp, t)
 
-		// check for errors
-		if err := resp.Err(); err != nil {
-			utility.ErrorLog.Fatalf("Download failed: %v\n", err)
-		}
-
+			// check for errors
+			if err := resp.Err(); err != nil {
+				utility.ErrorLog.Fatalf("Download failed: %v\n", err)
+			}
+		}(url)
 	}
-
+	wg.Wait()
 }
 
 // download files[video/gif/image](files with no sound)
