@@ -39,7 +39,7 @@ jobs:
       run: tar -czvf reddit-dl_linux.tar.gz *
       # working-directory: cmd/reddit-dl/
       
-    #- name: Release
+    - name: Release
       uses: softprops/action-gh-release@v0.1.15
       with:
         tag_name: '0.66.0'
