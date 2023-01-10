@@ -42,7 +42,6 @@ jobs:
       
     - name: Archive Files
       run: 7z a -mm=Deflate -mfb=258 -mpass=15 reddit-dl_windows.zip reddit-dl_amd64-windows.exe reddit-dl_i386-windows.exe
-      run: tar -czvf reddit-dl_windows.tar.gz reddit-dl_{amd64,i386}-windows.exe
       
     - name: Release
       uses: softprops/action-gh-release@v0.1.15
