@@ -1,9 +1,9 @@
 name: Windows Build
 
 on:
-  push:
-  pull_request:
-  
+  sechedule:
+  - cron: '0 5 * * *'
+
   workflow_dispatch:
 
 jobs:
