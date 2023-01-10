@@ -1,0 +1,54 @@
+name: Windows Build
+
+on:
+  push:
+  pull_request:
+  
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup Go Environment
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+        check-latest: true
+
+    - name: Update Go Dependencies
+      run: |
+        go get -u
+      working-directory: cmd/reddit-dl/
+    
+    - name: Add Time to Github Env
+      run: |
+        echo "RNAME=$(Get-Date -UFormat 'build %Y-%m-%d %H:%M')" >> $env:GITHUB_ENV
+        echo "RTXT=$(Get-Date -UFormat '### This release was automatically generated on %A %Y/%m/%d at %H:%M')" >> $env:GITHUB_ENV
+    
+    - name: Build for 64bit Windows
+      run: |
+        go build -v -o reddit-dl_amd64-windows.exe cmd/reddit-dl/main.go
+      shell: cmd
+    
+    - name: Build for 32bit Windows
+      run: |
+        set GOARCH=386
+        go build -v -o reddit-dl_i386-windows.exe cmd/reddit-dl/main.go
+      shell: cmd
+      
+    - name: Archive Files
+      run: 7z a -mm=Deflate -mfb=258 -mpass=15 reddit-dl_windows.zip reddit-dl_amd64-windows.exe reddit-dl_i386-windows.exe
+      run: tar -czvf reddit-dl_windows.tar.gz reddit-dl_{amd64,i386}-windows.exe
+      
+    - name: Release
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        name: ${{ env.RNAME }}
+        body: ${{ env.RTXT }}
+        tag_name: 'build'
+        files: |
+          reddit-dl_windows.tar.gz

@@ -1,4 +1,4 @@
-name: Linux Build
+name: MacOS Build
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -23,21 +23,21 @@ jobs:
       run: |
         go get -u
       working-directory: cmd/reddit-dl/
-    
-    - name: Build for 64bit Linux
+
+    - name: Build for Intel OSX
       run: |
-        go build -v -o reddit-dl_amd64-linux cmd/reddit-dl/main.go
+        go build -v -o reddit-dl_amd64-osx cmd/reddit-dl/main.go
     
-    - name: Build for 32bit Linux
+    - name: Build for M1 OSX
       run: |
-        GOARCH=386 go build -v -o reddit-dl_i386-linux cmd/reddit-dl/main.go
+        GOARCH=arm64 go build -v -o reddit-dl_arm64-osx cmd/reddit-dl/main.go
       
     - name: Archive Files
-      run: tar -czvf reddit-dl_linux.tar.gz reddit-dl_{amd64,i386}-linux
+      run: tar -czvf reddit-dl_osx.tar.gz reddit-dl_{amd64,arm64}-osx
       
     - name: Release
       uses: softprops/action-gh-release@v0.1.15
       with:
         tag_name: 'build'
         files: |
-          reddit-dl_linux.tar.gz
+          reddit-dl_osx.tar.gz
