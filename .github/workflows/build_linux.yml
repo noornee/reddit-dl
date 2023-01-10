@@ -1,8 +1,8 @@
 name: Linux Build
 
 on:
-  schedule:
-  - cron: '* 5 * * *'
+  # schedule:
+  # - cron: '* 5 * * *'
   
   workflow_dispatch:
 
@@ -35,13 +35,13 @@ jobs:
 
       # working-directory: cmd/reddit-dl/
       
-    - name: Zip Files
+    - name: Archive Files
       run: tar -czvf reddit-dl_linux.tar.gz *
       # working-directory: cmd/reddit-dl/
       
     #- name: Release
-      #uses: softprops/action-gh-release@v0.1.15
-      #with:
-        #tag_name: 'snapshot'
-        #files: |
-          #src/lex-linux.zip
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        tag_name: '0.66.0'
+        files: |
+          reddit-dl_linux.tar.gz
