@@ -1,7 +1,7 @@
 name: Linux Build
 
 on:
-  sechedule:
+  schedule:
   - cron: '0 5 * * *'
 
   workflow_dispatch:
