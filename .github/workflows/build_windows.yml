@@ -18,11 +18,7 @@ jobs:
       with:
         go-version: 1.19
         check-latest: true
-
-    - name: Update Go Dependencies
-      run: |
-        go get -u
-      working-directory: cmd/reddit-dl/
+        cache: true
     
     - name: Add Time to Github Env
       run: |
@@ -50,4 +46,4 @@ jobs:
         body: ${{ env.RTXT }}
         tag_name: 'build'
         files: |
-          reddit-dl_windows.tar.gz
+          reddit-dl_windows.zip

@@ -18,12 +18,8 @@ jobs:
       with:
         go-version: 1.19
         check-latest: true
-    
-    - name: Update Go Dependencies
-      run: |
-        go get -u
-      working-directory: cmd/reddit-dl/
-    
+        cache: true
+   
     - name: Build for 64bit Linux
       run: |
         go build -v -o reddit-dl_amd64-linux cmd/reddit-dl/main.go
