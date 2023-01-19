@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cavaliergopher/grab/v3"
+	"github.com/noornee/reddit-dl/color"
 	"github.com/noornee/reddit-dl/utility"
 )
 
@@ -29,15 +30,34 @@ func createDir() string {
 	return temp_dir
 }
 
+func resp_bytes_complete(resp *grab.Response) string {
+
+	size_bytes := int(resp.BytesComplete())
+	size_kb := int(size_bytes) / (1 << 10)
+	// mb := int(size_bytes) / (1 << 20)
+
+	return fmt.Sprintf("%s%dKB%s", color.Green, size_kb, color.Reset)
+
+}
+
+func resp_size(resp *grab.Response) string {
+
+	size_bytes := int(resp.Size())
+	size_kb := int(size_bytes) / (1 << 10)
+
+	return fmt.Sprintf("%s%dKB%s", color.Blue, size_kb, color.Reset)
+
+}
+
 // download progress
 func download_progress(resp *grab.Response, t *time.Ticker) {
 Loop:
 	for {
 		select {
 		case <-t.C:
-			fmt.Printf("  transferred %v / %v bytes (%.2f%%)\n",
-				resp.BytesComplete(),
-				resp.Size(),
+			fmt.Printf("  transferred %v / %v\t%.2f%%\n",
+				resp_bytes_complete(resp),
+				resp_size(resp),
 				100*resp.Progress())
 
 		case <-resp.Done:
