@@ -32,9 +32,9 @@ func createDir() string {
 
 func resp_bytes_complete(resp *grab.Response) string {
 
-	size_bytes := int(resp.BytesComplete())
-	size_kb := int(size_bytes) / (1 << 10)
-	// mb := int(size_bytes) / (1 << 20)
+	size_bytes := resp.BytesComplete()
+	size_kb := size_bytes / (1 << 10)
+	// mb := size_bytes / (1 << 20)
 
 	return fmt.Sprintf("%s%dKB%s", color.Green, size_kb, color.Reset)
 
@@ -42,8 +42,8 @@ func resp_bytes_complete(resp *grab.Response) string {
 
 func resp_size(resp *grab.Response) string {
 
-	size_bytes := int(resp.Size())
-	size_kb := int(size_bytes) / (1 << 10)
+	size_bytes := resp.Size()
+	size_kb := size_bytes / (1 << 10)
 
 	return fmt.Sprintf("%s%dKB%s", color.Blue, size_kb, color.Reset)
 
