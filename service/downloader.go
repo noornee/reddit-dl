@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/cavaliergopher/grab/v3"
-	"github.com/noornee/reddit-dl/color"
+	"github.com/gookit/color"
 	"github.com/noornee/reddit-dl/utility"
 )
 
@@ -30,22 +30,22 @@ func createDir() string {
 	return temp_dir
 }
 
-func resp_bytes_complete(resp *grab.Response) string {
+func downloaded_size(resp *grab.Response) string {
 
 	size_bytes := resp.BytesComplete()
 	size_kb := size_bytes / (1 << 10)
 	// mb := size_bytes / (1 << 20)
 
-	return fmt.Sprintf("%s%dKB%s", color.Green, size_kb, color.Reset)
+	return color.Green.Sprintf("%dKB", size_kb)
 
 }
 
-func resp_size(resp *grab.Response) string {
+func total_download_size(resp *grab.Response) string {
 
 	size_bytes := resp.Size()
 	size_kb := size_bytes / (1 << 10)
 
-	return fmt.Sprintf("%s%dKB%s", color.Blue, size_kb, color.Reset)
+	return color.Blue.Sprintf("%dKB", size_kb)
 
 }
 
@@ -56,8 +56,8 @@ Loop:
 		select {
 		case <-t.C:
 			fmt.Printf("  transferred %v / %v\t%.2f%%\n",
-				resp_bytes_complete(resp),
-				resp_size(resp),
+				downloaded_size(resp),
+				total_download_size(resp),
 				100*resp.Progress())
 
 		case <-resp.Done:
