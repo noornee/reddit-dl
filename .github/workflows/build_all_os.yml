@@ -1,0 +1,114 @@
+name: Build for all OS
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  linux_build:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Go Environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          check-latest: true
+          cache: true
+     
+      - name: Linux Build
+        run: |
+          echo "Building for 64bit Linux"
+          go build -v -o reddit-dl_amd64-linux cmd/reddit-dl/main.go
+
+          echo "Building for 32bit Linux"
+          GOARCH=386 go build -v -o reddit-dl_i386-linux cmd/reddit-dl/main.go
+
+          echo "Archiving files"
+          tar -czvf reddit-dl_linux.tar.gz reddit-dl_{amd64,i386}-linux
+
+          echo "Done building for Linux"
+      
+      - name: Create Release for Linux
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          tag_name: 'build'
+          files: |
+            reddit-dl_linux.tar.gz
+
+  mac_build:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup Go Environment
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+        check-latest: true
+        cache: true
+
+    - name: MacOS Build
+      run: |
+        echo "Building for Intel OSX"
+        go build -v -o reddit-dl_amd64-osx cmd/reddit-dl/main.go
+
+        echo "Building for M1 OSX"
+        GOARCH=arm64 go build -v -o reddit-dl_arm64-osx cmd/reddit-dl/main.go
+
+        echo "Archiving files"
+
+        tar -czvf reddit-dl_osx.tar.gz reddit-dl_{amd64,arm64}-osx
+
+        echo "Done Building for MacOS"
+
+    - name: Create Release for MacOS
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        tag_name: 'build'
+        files: |
+          reddit-dl_osx.tar.gz
+    
+  windows_build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    
+    - name: Setup Go Environment
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+        check-latest: true
+        cache: true
+    
+    - name: Windows Build
+      run: |
+        echo "Adding Time to Github Env"
+        echo "RNAME=$(Get-Date -UFormat 'build %Y-%m-%d %H:%M')" >> $env:GITHUB_ENV
+        echo "RTXT=$(Get-Date -UFormat '### This release was automatically generated on %A %Y/%m/%d at %H:%M')" >> $env:GITHUB_ENV
+
+        echo "Building for Windows x64"
+        go build -v -o reddit-dl_amd64-windows.exe cmd/reddit-dl/main.go
+
+        echo "Building for Windows x32"
+        $Env:GOARCH = "386"
+        go build -v -o reddit-dl_i386-windows.exe cmd/reddit-dl/main.go
+
+        echo "Archiving files"
+        7z a -mm=Deflate -mfb=258 -mpass=15 reddit-dl_windows.zip reddit-dl_amd64-windows.exe reddit-dl_i386-windows.exe
+
+        echo "Done Building for Windows"
+      
+    - name: Create Release for Windows
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        name: ${{ env.RNAME }}
+        body: ${{ env.RTXT }}
+        tag_name: 'build'
+        files: |
+          reddit-dl_windows.zip
