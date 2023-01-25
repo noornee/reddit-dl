@@ -8,17 +8,23 @@ import (
 	"github.com/noornee/reddit-dl/model"
 )
 
+type RedditData struct {
+	IsRedditGallery bool
+	GalleryUrls     []string // reddit gallery (multiple photos in a post)
+	MediaUrl        string   // media url (image|gif|video)
+}
+
 // parses the json body and returns the parsed url(s) and an error
-func ParseJSONBody(body []byte) ([]string, error) {
+func ParseJSONBody(body []byte) (RedditData, error) {
 
 	var (
-		dataDump model.Reddit // data dump
-		urls     []string     // slice of urls
+		dataDump   model.Reddit // data dump
+		redditData RedditData
 	)
 
 	err := json.Unmarshal(body, &dataDump)
 	if err != nil {
-		return urls, err
+		return redditData, err
 	}
 
 	for _, v := range dataDump {
@@ -30,17 +36,17 @@ func ParseJSONBody(body []byte) ([]string, error) {
 			for _, v := range data.MediaMetadata {
 				image_url := v.S.URL
 				url := strings.ReplaceAll(image_url, "amp;", "")
-				urls = append(urls, url)
+				redditData.IsRedditGallery = true
+				redditData.GalleryUrls = append(redditData.GalleryUrls, url)
 			}
-			return urls, nil
+			return redditData, nil
 		}
 
 		// for crosspost videos
 		if data.CrossPost != nil {
 			if data.CrossPost[0].SecureMedia != nil && data.CrossPost[0].SecureMedia.RedditVideo != nil {
-				url := data.CrossPost[0].SecureMedia.RedditVideo.FallbackURL
-				urls = append(urls, url)
-				return urls, nil
+				redditData.MediaUrl = data.CrossPost[0].SecureMedia.RedditVideo.FallbackURL
+				return redditData, nil
 			}
 		}
 
@@ -53,8 +59,8 @@ func ParseJSONBody(body []byte) ([]string, error) {
 			switch provider_url {
 			case gfycat:
 				url := strings.ReplaceAll(data.SecureMedia.Oembed.ThumbnailURL, "size_restricted.gif", "mobile.mp4")
-				urls = append(urls, url)
-				return urls, nil
+				redditData.MediaUrl = url
+				return redditData, nil
 			default:
 				ErrorLog.Printf("%s is not a supported provider, going to fallback options", provider_url)
 			}
@@ -64,36 +70,32 @@ func ParseJSONBody(body []byte) ([]string, error) {
 		if data.Preview != nil {
 
 			if data.Preview.Video != nil {
-				url := data.Preview.Video.FallbackURL
-				urls = append(urls, url)
-				return urls, nil
+				redditData.MediaUrl = data.Preview.Video.FallbackURL
+				return redditData, nil
 			}
 
 			// GIF variant of embedded video
 			if data.Preview.Images[0].Variants.GIF != nil {
-				url := data.Preview.Images[0].Variants.GIF.Source.URL
-				urls = append(urls, url)
-				return urls, nil
+				redditData.MediaUrl = data.Preview.Images[0].Variants.GIF.Source.URL
+				return redditData, nil
 			}
 
 		}
 
 		// if securemedia is nil then it's a normal image/gif
 		if data.SecureMedia.RedditVideo == nil && data.SecureMedia.Oembed == nil {
-			url := data.URLOverriddenByDest
-			urls = append(urls, url)
-			return urls, nil
+			redditData.MediaUrl = data.URLOverriddenByDest
+			return redditData, nil
 		}
 
 		// for normal reddit video
 		if data.SecureMedia.RedditVideo != nil {
-			url := data.SecureMedia.RedditVideo.FallbackURL
-			urls = append(urls, url)
-			return urls, nil
+			redditData.MediaUrl = data.SecureMedia.RedditVideo.FallbackURL
+			return redditData, nil
 		}
 	}
 
-	return urls, nil
+	return redditData, nil
 }
 
 func GetMediaUrl(url string) (media, audio string) {

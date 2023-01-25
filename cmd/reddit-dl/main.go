@@ -33,6 +33,7 @@ func main() {
 		},
 		Action: func(ctx *cli.Context) error {
 			url := ctx.String("url")
+
 			if url == "" {
 				cli.ShowAppHelp(ctx)
 				return nil
@@ -62,29 +63,25 @@ func controller(raw_url string) {
 		utility.ErrorLog.Fatal(err)
 	}
 
-	// media -> an array of string(s) containing the url
-	media_url, err := utility.ParseJSONBody(body)
-
+	reddit_data, err := utility.ParseJSONBody(body)
 	if err != nil {
 		utility.ErrorLog.Fatal(err)
 	}
 
 	var wg sync.WaitGroup
 
-	for _, url := range media_url {
-		wg.Add(1)
-
-		go func(url string) {
-			defer wg.Done()
-			// if it's a reddit gallery(multiple images in a post), then it's going to contain multiple urls
-			// its length would be greater than 1
-			if len(media_url) <= 1 {
-				media, audio := utility.GetMediaUrl(url)
-				service.Setup(media, audio, title)
-			} else {
+	if reddit_data.IsRedditGallery {
+		for _, url := range reddit_data.GalleryUrls {
+			wg.Add(1)
+			go func(url string) {
+				defer wg.Done()
 				service.Setup(url, "", title)
-			}
-		}(url)
+			}(url)
+		}
+		wg.Wait()
+
+	} else {
+		media, audio := utility.GetMediaUrl(reddit_data.MediaUrl)
+		service.Setup(media, audio, title)
 	}
-	wg.Wait()
 }
