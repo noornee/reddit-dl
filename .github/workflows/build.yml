@@ -41,7 +41,7 @@ jobs:
         echo "Archiving files with tar"
         tar -czvf reddit-dl_linux.tar.gz reddit-dl_linux_{amd64,arm}
         tar -czvf reddit-dl_darwin.tar.gz reddit-dl_darwin_{amd64,arm64}
-        tar -czvf reddit-dl_windows.tar.gz reddit-dl_windows_{amd64,386}
+        tar -czvf reddit-dl_windows.tar.gz reddit-dl_windows_{amd64,386}.exe
         echo "Done"
     
     - name: Create Release
