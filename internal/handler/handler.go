@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/noornee/reddit-dl/utility"
+	"github.com/noornee/reddit-dl/internal/utility"
 )
 
 // Parses the url and appends .json to it

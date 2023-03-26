@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/noornee/reddit-dl/model"
+	"github.com/noornee/reddit-dl/internal/model"
 )
 
 type RedditData struct {

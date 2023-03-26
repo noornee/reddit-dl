@@ -9,7 +9,7 @@ import (
 
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/gookit/color"
-	"github.com/noornee/reddit-dl/utility"
+	"github.com/noornee/reddit-dl/internal/utility"
 )
 
 // create a directory temp

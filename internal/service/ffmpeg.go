@@ -3,7 +3,7 @@ package service
 import (
 	"os"
 
-	"github.com/noornee/reddit-dl/utility"
+	"github.com/noornee/reddit-dl/internal/utility"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 

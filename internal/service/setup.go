@@ -3,7 +3,7 @@ package service
 import (
 	"strings"
 
-	"github.com/noornee/reddit-dl/handler"
+	"github.com/noornee/reddit-dl/internal/handler"
 )
 
 func Setup(media_url, audio_url, title string) {

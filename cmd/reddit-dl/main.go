@@ -5,9 +5,9 @@ import (
 	"os"
 	"sync"
 
-	"github.com/noornee/reddit-dl/handler"
-	"github.com/noornee/reddit-dl/service"
-	"github.com/noornee/reddit-dl/utility"
+	"github.com/noornee/reddit-dl/internal/handler"
+	"github.com/noornee/reddit-dl/internal/service"
+	"github.com/noornee/reddit-dl/internal/utility"
 	"github.com/urfave/cli/v2"
 )
 
