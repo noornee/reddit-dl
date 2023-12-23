@@ -11,7 +11,6 @@ import (
 
 // Parses the url and appends .json to it
 func ParseUrl(raw string) (url, title string, err error) {
-
 	utility.InfoLog.Println("Parsing The URL")
 
 	/*
@@ -31,7 +30,7 @@ func ParseUrl(raw string) (url, title string, err error) {
 	// drop the 1st occourance of www.
 	raw = strings.Replace(raw, "www.", "", 1)
 	// and replace the 1st occourance of reddit.com with old.reddit.com
-	raw = strings.Replace(raw, "reddit.com", "old.reddit.com", 1)
+	// raw = strings.Replace(raw, "reddit.com", "old.reddit.com", 1)
 
 	// if it fails after those, the url that was sent is likely nonsense.
 
@@ -52,7 +51,6 @@ func ParseUrl(raw string) (url, title string, err error) {
 
 // Get the url response body
 func GetBody(url string) ([]byte, error) {
-
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -61,7 +59,6 @@ func GetBody(url string) ([]byte, error) {
 	req.Header.Set("User-Agent", "Mozilla/5.0")
 
 	resp, err := http.DefaultClient.Do(req)
-
 	if err != nil {
 		return nil, err
 	}
@@ -70,17 +67,20 @@ func GetBody(url string) ([]byte, error) {
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		utility.ErrorLog.Println("Error getting JSON body")
+		return nil, fmt.Errorf("status code is %s", resp.Status)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
 	return body, nil
-
 }
 
 func GetHead(url string) (status_code int, content_type string) {
-
 	req, err := http.NewRequest("HEAD", url, nil)
 	if err != nil {
 		return 0, ""
@@ -97,5 +97,4 @@ func GetHead(url string) (status_code int, content_type string) {
 	content_type = resp.Header.Get("Content-Type")
 
 	return status_code, content_type
-
 }
