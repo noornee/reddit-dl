@@ -37,6 +37,7 @@ type preview struct {
 type redditVideo struct {
 	FallbackURL string `json:"fallback_url"`
 	HLS         string `json:"hls_url"`
+	DASH        string `json:"dash_url"`
 }
 
 type oembed struct {

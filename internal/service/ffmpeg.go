@@ -9,14 +9,12 @@ import (
 
 // merge downoladed files[video,audio] with ffmpeg
 func video_merger(filename string) {
-
 	const temp_dir = ".reddit_temp/"
 
 	filename = filename + ".mp4"
 
 	// use os.ReadDir instead of ioutil, as it's deprecated since go 1.16
 	files, err := os.ReadDir(temp_dir)
-
 	if err != nil {
 		utility.ErrorLog.Println(err)
 	}
@@ -50,5 +48,15 @@ func video_merger(filename string) {
 	if err != nil {
 		utility.ErrorLog.Println(err)
 	}
+}
 
+func DashPlaylist(url string, title string) {
+	err := ffmpeg.Input(url).
+		Output(title+".mp4", ffmpeg.KwArgs{"c": "copy"}).
+		OverWriteOutput().ErrorToStdOut().Run()
+	if err != nil {
+		utility.ErrorLog.Println(err)
+	}
+
+	utility.InfoLog.Println("Done")
 }

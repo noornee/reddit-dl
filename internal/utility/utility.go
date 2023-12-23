@@ -12,11 +12,11 @@ type RedditData struct {
 	IsRedditGallery bool
 	GalleryUrls     []string // reddit gallery (multiple photos in a post)
 	MediaUrl        string   // media url (image|gif|video)
+	IsDash          bool
 }
 
 // parses the json body and returns the parsed url(s) and an error
-func ParseJSONBody(body []byte) (RedditData, error) {
-
+func ParseJSONBody(body []byte, useDash bool) (RedditData, error) {
 	var (
 		dataDump   model.Reddit // data dump
 		redditData RedditData
@@ -30,6 +30,13 @@ func ParseJSONBody(body []byte) (RedditData, error) {
 	for _, v := range dataDump {
 
 		data := v.Data.Children[0].Data
+
+		// download video using DASHPLAYLIST
+		if useDash == true && data.SecureMedia.RedditVideo != nil {
+			redditData.MediaUrl = data.SecureMedia.RedditVideo.DASH
+			redditData.IsDash = true
+			return redditData, nil
+		}
 
 		// this is for multiple pictures posted --> reddit gallery
 		if data.MediaMetadata != nil {
@@ -99,7 +106,6 @@ func ParseJSONBody(body []byte) (RedditData, error) {
 }
 
 func GetMediaUrl(url string) (media, audio string) {
-
 	url = strings.ReplaceAll(url, "amp;", "")
 
 	// checks if its a gif

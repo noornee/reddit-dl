@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	// default url incase the url flag isnt passed
 	var raw_url string
 
@@ -30,6 +29,10 @@ func main() {
 				Usage: "a reddit post url",
 				Value: raw_url,
 			},
+			&cli.BoolFlag{
+				Name:  "dash",
+				Usage: "download reddit video using Dash playlist with ffmpeg",
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			url := ctx.String("url")
@@ -39,7 +42,12 @@ func main() {
 				return nil
 			}
 
-			controller(url)
+			if ctx.Bool("dash") {
+				controller(url, true)
+			} else {
+				controller(url, false)
+			}
+
 			return nil
 		},
 	}
@@ -48,10 +56,9 @@ func main() {
 		fmt.Println()
 		utility.ErrorLog.Println(err)
 	}
-
 }
 
-func controller(raw_url string) {
+func controller(raw_url string, useDash bool) {
 	url, title, err := handler.ParseUrl(raw_url)
 	if err != nil {
 		utility.ErrorLog.Fatal(err)
@@ -63,12 +70,18 @@ func controller(raw_url string) {
 		utility.ErrorLog.Fatal(err)
 	}
 
-	reddit_data, err := utility.ParseJSONBody(body)
+	reddit_data, err := utility.ParseJSONBody(body, useDash)
 	if err != nil {
 		utility.ErrorLog.Fatal(err)
 	}
 
 	var wg sync.WaitGroup
+
+	if reddit_data.IsDash == true {
+		utility.InfoLog.Println("Downloading DASHPlaylist\n")
+		service.DashPlaylist(reddit_data.MediaUrl, title)
+		return
+	}
 
 	if reddit_data.IsRedditGallery {
 		for _, url := range reddit_data.GalleryUrls {
