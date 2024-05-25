@@ -1,9 +1,8 @@
-package service
+package helper
 
 import (
 	"os"
 
-	"github.com/noornee/reddit-dl/internal/utility"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
@@ -13,10 +12,9 @@ func video_merger(filename string) {
 
 	filename = filename + ".mp4"
 
-	// use os.ReadDir instead of ioutil, as it's deprecated since go 1.16
 	files, err := os.ReadDir(temp_dir)
 	if err != nil {
-		utility.ErrorLog.Println(err)
+		ErrorLog.Println(err)
 	}
 
 	var aud, vid string
@@ -30,33 +28,32 @@ func video_merger(filename string) {
 	in1 := ffmpeg.Input(vid)
 	in2 := ffmpeg.Input(aud)
 
-	utility.InfoLog.Printf("Merging files into \t%s\r\n", filename)
+	InfoLog.Printf("Merging files into \t%s\r\n", filename)
 
 	err = ffmpeg.Concat([]*ffmpeg.Stream{in1, in2}, ffmpeg.KwArgs{"v": 1, "a": 1}).
 		Output(filename, ffmpeg.KwArgs{"v": "quiet"}).
 		GlobalArgs("-stats").
 		OverWriteOutput().ErrorToStdOut().Run()
-
 	if err != nil {
-		utility.ErrorLog.Println(err)
+		ErrorLog.Println(err)
 	}
 
-	utility.InfoLog.Println("Done")
+	InfoLog.Println("Done")
 
 	// remove temp directory that was created
 	err = os.RemoveAll(temp_dir)
 	if err != nil {
-		utility.ErrorLog.Println(err)
+		ErrorLog.Println(err)
 	}
 }
 
-func DashPlaylist(url string, title string) {
+func DownloadDashPlaylist(url string, title string) {
 	err := ffmpeg.Input(url).
 		Output(title+".mp4", ffmpeg.KwArgs{"c": "copy"}).
 		OverWriteOutput().ErrorToStdOut().Run()
 	if err != nil {
-		utility.ErrorLog.Println(err)
+		ErrorLog.Println(err)
 	}
 
-	utility.InfoLog.Println("Done")
+	InfoLog.Println("Done")
 }

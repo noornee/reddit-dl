@@ -1,24 +1,19 @@
-package utility
+package reddit
 
 import (
 	"encoding/json"
-	"regexp"
 	"strings"
 
-	"github.com/noornee/reddit-dl/internal/model"
+	"github.com/noornee/reddit-dl/internal/helper"
 )
 
-type RedditData struct {
-	IsRedditGallery bool
-	GalleryUrls     []string // reddit gallery (multiple photos in a post)
-	MediaUrl        string   // media url (image|gif|video)
-	IsDash          bool
-}
-
-// parses the json body and returns the parsed url(s) and an error
-func ParseJSONBody(body []byte, useDash bool) (RedditData, error) {
+// ExtractRedditData parses the provided JSON body to extract media-related information from Reddit.
+//
+// This function handles various types of media including DASH video, Reddit galleries, crosspost videos,
+// and external media providers (e.g., gfycat).
+func ExtractRedditData(body []byte, useDash bool) (RedditData, error) {
 	var (
-		dataDump   model.Reddit // data dump
+		dataDump   Reddit // data dump
 		redditData RedditData
 	)
 
@@ -32,8 +27,8 @@ func ParseJSONBody(body []byte, useDash bool) (RedditData, error) {
 		data := v.Data.Children[0].Data
 
 		// download video using DASHPLAYLIST
-		if useDash == true && data.SecureMedia.RedditVideo != nil {
-			redditData.MediaUrl = data.SecureMedia.RedditVideo.DASH
+		if useDash && data.SecureMedia.RedditVideo != nil {
+			redditData.MediaUrl = strings.Split(data.SecureMedia.RedditVideo.DASH, "?")[0]
 			redditData.IsDash = true
 			return redditData, nil
 		}
@@ -69,7 +64,7 @@ func ParseJSONBody(body []byte, useDash bool) (RedditData, error) {
 				redditData.MediaUrl = url
 				return redditData, nil
 			default:
-				ErrorLog.Printf("%s is not a supported provider, going to fallback options", provider_url)
+				helper.ErrorLog.Printf("%s is not a supported provider, going to fallback options", provider_url)
 			}
 		}
 
@@ -103,28 +98,4 @@ func ParseJSONBody(body []byte, useDash bool) (RedditData, error) {
 	}
 
 	return redditData, nil
-}
-
-func GetMediaUrl(url string) (media, audio string) {
-	url = strings.ReplaceAll(url, "amp;", "")
-
-	// checks if its a gif
-	if strings.Contains(url, ".gif") {
-		media = url
-		audio = ""
-		return media, audio
-	}
-
-	// normal video
-	media = strings.Split(url, "?")[0]
-	re, _ := regexp.Compile("_[0-9]+")
-	audio = re.ReplaceAllString(media, "_audio")
-
-	// this is for external videos/gif i.e. from gfycat
-	// it wouldnt match the regex pattern
-	if media == audio {
-		return media, ""
-	}
-
-	return media, audio
 }

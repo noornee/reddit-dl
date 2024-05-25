@@ -1,4 +1,4 @@
-package service
+package helper
 
 import (
 	"fmt"
@@ -9,12 +9,9 @@ import (
 
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/gookit/color"
-	"github.com/noornee/reddit-dl/internal/utility"
 )
 
-// create a directory temp
 func createDir() string {
-
 	const temp_dir = ".reddit_temp"
 
 	// if temp_dir exists, delete
@@ -24,29 +21,25 @@ func createDir() string {
 
 	err := os.Mkdir(temp_dir, os.ModePerm)
 	if err != nil {
-		utility.ErrorLog.Println(err)
+		ErrorLog.Println(err)
 	}
 
 	return temp_dir
 }
 
 func downloaded_size(resp *grab.Response) string {
-
 	size_bytes := resp.BytesComplete()
 	size_kb := size_bytes / (1 << 10)
 	// mb := size_bytes / (1 << 20)
 
 	return color.Green.Sprintf("%dKB", size_kb)
-
 }
 
 func total_download_size(resp *grab.Response) string {
-
 	size_bytes := resp.Size()
 	size_kb := size_bytes / (1 << 10)
 
 	return color.Blue.Sprintf("%dKB", size_kb)
-
 }
 
 // download progress
@@ -65,7 +58,6 @@ Loop:
 			break Loop
 		}
 	}
-
 }
 
 func downloader(urls []string) {
@@ -93,7 +85,7 @@ func downloader(urls []string) {
 
 			// check for errors
 			if err := resp.Err(); err != nil {
-				utility.ErrorLog.Fatalf("Download failed: %v\n", err)
+				ErrorLog.Fatalf("Download failed: %v\n", err)
 			}
 		}(url)
 	}
@@ -102,7 +94,6 @@ func downloader(urls []string) {
 
 // download files[video/gif/image](files with no sound)
 func downloader_nos(url, title string) {
-
 	// create client
 	client := grab.NewClient()
 
@@ -118,21 +109,34 @@ func downloader_nos(url, title string) {
 
 	// check for errors
 	if err := resp.Err(); err != nil {
-		utility.ErrorLog.Fatalf("Download failed: %v\n", err)
+		ErrorLog.Fatalf("Download failed: %v\n", err)
 	}
 
 	if strings.Contains(resp.Filename, ".mp4") {
 		file_name := fmt.Sprintf("%s.mp4", title)
 		err := os.Rename(resp.Filename, file_name)
 		if err != nil {
-			utility.ErrorLog.Println(err)
+			ErrorLog.Println(err)
 		}
 
-		utility.InfoLog.Printf("Download saved to %v \n", file_name)
+		InfoLog.Printf("Download saved to %v \n", file_name)
 
 	} else {
+		InfoLog.Printf("Download saved to %v \n", resp.Filename)
+	}
+}
 
-		utility.InfoLog.Printf("Download saved to %v \n", resp.Filename)
+func Download(media_url, audio_url, title string) {
+	if audio_url != "" {
+		status_code, mime := GetHead(audio_url)
+
+		if status_code == 200 && !strings.Contains(mime, "image") {
+			downloader([]string{media_url, audio_url})
+			video_merger(title)
+			return
+		}
+
 	}
 
+	downloader_nos(media_url, title)
 }

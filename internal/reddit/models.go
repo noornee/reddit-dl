@@ -1,4 +1,4 @@
-package model
+package reddit
 
 type Reddit []struct {
 	Data struct {
@@ -54,4 +54,11 @@ type mediaMetadata map[string]struct {
 	S struct {
 		URL string `json:"u"`
 	} `json:"s"`
+}
+
+type RedditData struct {
+	IsRedditGallery bool
+	GalleryUrls     []string // reddit gallery (multiple photos in a post)
+	MediaUrl        string   // media url (image|gif|video)
+	IsDash          bool
 }
